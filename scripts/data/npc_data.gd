@@ -9,9 +9,9 @@ var display_name := ""
 var role := ""
 var personality: Dictionary = {}
 var relationship := NPCRelationship.new()
-var current_state: Dictionary = {"location_id": "street", "activity": "relaxing", "mood": "NEUTRAL"}
+var current_state: Dictionary = {"location_id": "TOWN_SQUARE", "activity": "relaxing", "mood": "NEUTRAL"}
 var memories: Array[NPCMemory] = []
-var home_location_id := "residential"
+var home_location_id := "RESIDENTIAL_ROW"
 var schedule: Array = []
 var needs: Dictionary = {"social": 0.5, "security": 0.5, "resources": 0.5}
 var relationship_importance := 0.5
@@ -27,8 +27,8 @@ static func from_definition(definition: Dictionary) -> NPCData:
 	npc.id = str(definition.get("id", "unknown"))
 	npc.display_name = str(definition.get("display_name", npc.id.capitalize()))
 	npc.role = str(definition.get("role", "Neighbor"))
-	npc.home_location_id = str(definition.get("home_location_id", "residential"))
-	npc.current_state["location_id"] = str(definition.get("initial_location_id", npc.home_location_id))
+	npc.home_location_id = LocationRegistry.canonical(str(definition.get("home_location_id", "RESIDENTIAL_ROW")))
+	npc.current_state["location_id"] = LocationRegistry.canonical(str(definition.get("initial_location_id", npc.home_location_id)))
 	var traits := DataUtils.dictionary(definition.get("personality", {}))
 	for trait_name in PERSONALITY_NAMES:
 		npc.personality[trait_name] = DataUtils.unit(traits.get(trait_name, 0.5))
@@ -51,8 +51,8 @@ static func from_definition(definition: Dictionary) -> NPCData:
 
 func restore(data: Dictionary) -> void:
 	display_name = str(data.get("display_name", display_name))
-	role = str(data.get("role", role))
-	home_location_id = str(data.get("home_location_id", home_location_id))
+	role = LocationRegistry.rethemed_role(id, str(data.get("role", role)), role)
+	home_location_id = LocationRegistry.canonical(str(data.get("home_location_id", home_location_id)))
 	var saved_personality := DataUtils.dictionary(data.get("personality", {}))
 	for trait_name in PERSONALITY_NAMES:
 		personality[trait_name] = DataUtils.unit(saved_personality.get(trait_name, personality.get(trait_name, 0.5)))
@@ -60,6 +60,7 @@ func restore(data: Dictionary) -> void:
 	var state := DataUtils.dictionary(data.get("current_state", {}))
 	for state_key in ["location_id", "activity", "mood"]:
 		current_state[state_key] = str(state.get(state_key, current_state[state_key]))
+	current_state["location_id"] = LocationRegistry.canonical(str(current_state["location_id"]))
 	var saved_needs := DataUtils.dictionary(data.get("needs", {}))
 	for need_name: String in needs:
 		needs[need_name] = DataUtils.unit(saved_needs.get(need_name, needs[need_name]))

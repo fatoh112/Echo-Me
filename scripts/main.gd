@@ -40,6 +40,13 @@ func _ready() -> void:
 	interaction_ui.update_clock(world)
 	debug_ui.refresh()
 	_update_proximity()
+	_settle_spawn.call_deferred()
+
+
+func _settle_spawn() -> void:
+	await get_tree().physics_frame
+	PlayerSpawnResolver.place(player, world)
+	_update_proximity()
 
 
 func _process(delta: float) -> void:
@@ -48,7 +55,7 @@ func _process(delta: float) -> void:
 	_proximity_elapsed += delta
 	_logical_elapsed += delta
 	if player.global_position.y < -10.0:
-		player.global_position = Vector3(0, 0, 8)
+		player.global_position = world.location_position("PLAYER_QUARTERS")
 		player.velocity = Vector3.ZERO
 	if _proximity_elapsed >= 0.15:
 		_proximity_elapsed = 0.0

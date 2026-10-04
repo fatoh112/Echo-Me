@@ -28,7 +28,7 @@ static func create(
 	var action := WorldAction.new()
 	action.action_type = kind.to_upper()
 	action.target_id = target
-	action.location_id = location
+	action.location_id = LocationRegistry.canonical(location)
 	action.actual_source = source
 	action.timestamp = Time.get_unix_time_from_system() if at_time < 0.0 else at_time
 	action.id = "%s-%d-%d" % [source, int(action.timestamp), Time.get_ticks_usec()] if event_id.is_empty() else event_id
@@ -58,7 +58,7 @@ static func from_dict(data: Dictionary) -> WorldAction:
 	action.perceived_actor_id = str(data.get("perceived_actor_id", "PLAYER"))
 	action.actual_source = str(data.get("actual_source", data.get("actor_source", "PLAYER")))
 	action.target_id = str(data.get("target_id", ""))
-	action.location_id = str(data.get("location_id", "street"))
+	action.location_id = LocationRegistry.canonical(str(data.get("location_id", "TOWN_SQUARE")))
 	action.action_type = str(data.get("action_type", "IGNORE")).to_upper()
 	action.behavior_effects = DataUtils.dictionary(data.get("behavior_effects", {})).duplicate(true)
 	action.relationship_effects = DataUtils.dictionary(data.get("relationship_effects", {})).duplicate(true)

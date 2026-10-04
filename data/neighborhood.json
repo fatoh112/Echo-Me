@@ -1,31 +1,44 @@
 {
-  "player_area": {
-    "display_name": "Player area / spawn",
+  "PLAYER_QUARTERS": {
+    "display_name": "Player Quarters",
+    "bounds": [-5, 5, 7, 16],
     "position": [
       0,
       0,
-      8
+      11
     ],
     "opportunities": {
       "BEFRIEND": 0.5,
       "IGNORE": 0.5
     }
   },
-  "street": {
-    "display_name": "Street",
+  "TOWN_SQUARE": {
+    "display_name": "Town Square",
+    "bounds": [-7, 7, -10, 7],
     "position": [
       0,
       0,
-      -4
+      -5
     ],
+    "npc_offsets": {
+      "alex": [-4, 0, -2],
+      "sarah": [-3, 0, 0],
+      "mike": [3, 0, 0],
+      "emma": [4, 0, 2],
+      "david": [0, 0, -2],
+      "noah": [3, 0, 2]
+    },
     "opportunities": {
       "DEFEND": 0.9,
-      "THREATEN": 0.65,
-      "INSULT": 0.6
+      "THREATEN": 0.6,
+      "INSULT": 0.6,
+      "BEFRIEND": 1,
+      "HELP": 0.85
     }
   },
-  "shop": {
-    "display_name": "Alex's Shop",
+  "MERCHANT_SHOP": {
+    "display_name": "Merchant Shop",
+    "bounds": [-19, -7, -10, 1],
     "position": [
       -10,
       0,
@@ -34,43 +47,32 @@
     "opportunities": {
       "STEAL": 1,
       "GIVE": 0.85,
-      "HELP": 0.7,
+      "HELP": 0.8,
       "LIE": 0.75
     }
   },
-  "cafe": {
-    "display_name": "Cafe",
+  "TAVERN": {
+    "display_name": "The Amber Hearth / Tavern",
+    "bounds": [7, 19, -10, 1],
     "position": [
       10,
       0,
       -6
     ],
     "opportunities": {
-      "BEFRIEND": 0.9,
+      "BEFRIEND": 0.95,
       "GIVE": 0.8,
-      "HELP": 0.75,
+      "HELP": 0.8,
       "INSULT": 0.65
     }
   },
-  "park": {
-    "display_name": "Small Park",
-    "position": [
-      -10,
-      0,
-      9
-    ],
-    "opportunities": {
-      "BEFRIEND": 1,
-      "HELP": 0.85,
-      "DEFEND": 0.8
-    }
-  },
-  "residential": {
-    "display_name": "Apartments / Residential",
+  "RESIDENTIAL_ROW": {
+    "display_name": "Residential Row",
+    "bounds": [7, 27, 6, 15],
     "position": [
       10,
       0,
-      10
+      9
     ],
     "opportunities": {
       "BETRAY": 0.8,
@@ -79,8 +81,9 @@
       "IGNORE": 0.65
     }
   },
-  "alley": {
-    "display_name": "Alley",
+  "BACK_ALLEY": {
+    "display_name": "Back Alley",
+    "bounds": [-3, 3, -28, -12],
     "position": [
       0,
       0,
@@ -91,6 +94,22 @@
       "STEAL": 0.9,
       "BETRAY": 0.9,
       "INSULT": 0.85
+    }
+  },
+  "WATCH_POST": {
+    "display_name": "Town Watch Post",
+    "bounds": [-20, -7, 4, 14],
+    "position": [
+      -10,
+      0,
+      9
+    ],
+    "opportunities": {
+      "DEFEND": 0.95,
+      "HELP": 0.8,
+      "LIE": 0.4,
+      "THREATEN": 0.3,
+      "STEAL": 0.25
     }
   }
 }

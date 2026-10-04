@@ -33,7 +33,7 @@ func _run() -> void:
 	_check(float(sarah.relationship.values["trust"]) > original_trust, "A: Sarah trust rises independently")
 	_check((world.npcs["alex"] as NPCData).memories.is_empty(), "A: Alex history is independent")
 	var first_change := PlayerBehaviorProfile.new()
-	first_change.apply_action(WorldAction.create("GIVE", "sarah", "park"))
+	first_change.apply_action(WorldAction.create("GIVE", "sarah", "RESIDENTIAL_ROW"))
 	_check(float(first_change.traits["generosity"]) <= 0.561, "Profile EMA avoids giant jumps")
 	for trait_name in PlayerBehaviorProfile.TRAIT_NAMES:
 		_check(absf(float(world.echo_profile.traits[trait_name]) - (1.0 - float(world.player_profile.traits[trait_name]))) <= EchoBehaviorProfile.MAX_DISTORTION + 0.00001, "Bounded inverse: " + trait_name)
@@ -76,7 +76,7 @@ func _run() -> void:
 	scratch_paths.append(save_path)
 	world.game_minutes = 777.0
 	world.player_position = Vector3(3, 0, 7)
-	world.last_player_location = "park"
+	world.last_player_location = "RESIDENTIAL_ROW"
 	_check(manager.save_world(world, 1000011.0, save_path), "E: save succeeds")
 	var loaded := manager.load_world(save_path)
 	_check(_same_data(world.to_dict(), loaded.to_dict()), "E: complete traits/relationships/memories/reputation/world-state round trip")
@@ -91,8 +91,8 @@ func _run() -> void:
 	var scheduled_world := WorldState.new()
 	scheduled_world.game_minutes = 1200
 	scheduled_world.update_schedules()
-	_check(str((scheduled_world.npcs["alex"] as NPCData).current_state["location_id"]) == "residential", "Alex evening schedule")
-	_check(str((scheduled_world.npcs["emma"] as NPCData).current_state["location_id"]) == "residential", "Emma evening schedule")
+	_check(str((scheduled_world.npcs["alex"] as NPCData).current_state["location_id"]) == "RESIDENTIAL_ROW", "Alex evening schedule")
+	_check(str((scheduled_world.npcs["emma"] as NPCData).current_state["location_id"]) == "RESIDENTIAL_ROW", "Emma evening schedule")
 	await _test_scene()
 	manager.free()
 	_cleanup()
@@ -246,6 +246,7 @@ func _test_scene() -> void:
 	_check("ECHO" in game.interaction_ui.summary_debug.text, "Internal events available in development section")
 	game.interaction_ui.close_all()
 	_check(game.player.controls_enabled, "Closing summary restores controls")
+	await preload("res://tests/visual_checks.gd").new().run(game, _check)
 	var toggle := InputEventKey.new()
 	toggle.keycode = KEY_F3
 	toggle.pressed = true

@@ -1,18 +1,16 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/actors/player_controller.gd" id="1_player"]
+[ext_resource type="PackedScene" path="res://assets/characters/player/Kachujin G Rosales.fbx" id="2_model"]
+[ext_resource type="Script" path="res://scripts/actors/player_visual.gd" id="3_visual"]
+[ext_resource type="Script" path="res://scripts/actors/exploration_camera.gd" id="4_camera"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape_player"]
 radius = 0.38
 height = 1.8
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_player"]
-radius = 0.38
-height = 1.8
-
-[sub_resource type="StandardMaterial3D" id="PlayerMaterial"]
-albedo_color = Color(0.22, 0.48, 0.72, 1)
-roughness = 0.85
+[sub_resource type="SphereShape3D" id="CameraShape"]
+radius = 0.2
 
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_player")
@@ -22,16 +20,24 @@ floor_snap_length = 0.2
 position = Vector3(0, 0.9, 0)
 shape = SubResource("CapsuleShape_player")
 
-[node name="Body" type="MeshInstance3D" parent="."]
-position = Vector3(0, 0.9, 0)
-mesh = SubResource("CapsuleMesh_player")
-material_override = SubResource("PlayerMaterial")
+[node name="Body" type="Node3D" parent="."]
 
-[node name="CameraPivot" type="Node3D" parent="."]
-position = Vector3(0, 1.45, 0)
+[node name="VisualRoot" type="Node3D" parent="Body"]
+script = ExtResource("3_visual")
+
+[node name="KachujinModel" parent="Body/VisualRoot" instance=ExtResource("2_model")]
+
+[node name="AnimationTree" type="AnimationTree" parent="Body/VisualRoot"]
+
+[node name="CameraPivot" type="SpringArm3D" parent="."]
+position = Vector3(0.28, 1.55, 0)
+rotation = Vector3(-0.16, 0, 0)
+spring_length = 4.4
+margin = 0.18
+shape = SubResource("CameraShape")
+script = ExtResource("4_camera")
 
 [node name="Camera3D" type="Camera3D" parent="CameraPivot"]
-position = Vector3(0, 0.75, 4.5)
-rotation = Vector3(-0.18, 0, 0)
 current = true
-fov = 72.0
+fov = 65.0
+near = 0.08

@@ -7,10 +7,10 @@ var echo_seed := 94721
 var npcs: Dictionary = {}
 var locations: Dictionary = {}
 var reputation := ReputationSystem.new()
-var game_minutes := 600.0
-var player_position := Vector3(0, 0, 8)
-var last_player_location := "player_area"
-var echo_location_id := "street"
+var game_minutes := 1020.0
+var player_position := Vector3(0, 0, 11)
+var last_player_location := "PLAYER_QUARTERS"
+var echo_location_id := "TOWN_SQUARE"
 var echo_turn_index := 0
 var event_history: Array[WorldAction] = []
 var last_offline_events: Array[WorldAction] = []
@@ -46,7 +46,7 @@ func update_schedules() -> void:
 
 
 func location_position(location_id: String) -> Vector3:
-	var location := DataUtils.dictionary(locations.get(location_id, {}))
+	var location := DataUtils.dictionary(locations.get(LocationRegistry.canonical(location_id), {}))
 	var position_data: Variant = location.get("position", [0, 0, 0])
 	if position_data is Array and position_data.size() == 3:
 		return Vector3(float(position_data[0]), float(position_data[1]), float(position_data[2]))
@@ -54,13 +54,23 @@ func location_position(location_id: String) -> Vector3:
 
 
 func npc_position(npc: NPCData) -> Vector3:
-	return location_position(str(npc.current_state["location_id"])) + npc.slot_offset
+	var location_id := LocationRegistry.canonical(str(npc.current_state["location_id"]))
+	var location: Dictionary = locations.get(location_id, {})
+	var slots := DataUtils.dictionary(location.get("npc_offsets", {}))
+	var custom: Variant = slots.get(npc.id)
+	if custom is Array and custom.size() == 3:
+		return location_position(location_id) + Vector3(float(custom[0]), float(custom[1]), float(custom[2]))
+	return location_position(location_id) + npc.slot_offset
 
 
 func closest_location(position: Vector3) -> String:
-	var nearest := "street"
+	var nearest := "TOWN_SQUARE"
 	var distance := INF
 	for location_id: String in locations:
+		var bounds: Variant = locations[location_id].get("bounds", [])
+		if bounds is Array and bounds.size() == 4:
+			if position.x >= float(bounds[0]) and position.x <= float(bounds[1]) and position.z >= float(bounds[2]) and position.z <= float(bounds[3]):
+				return location_id
 		var candidate := position.distance_squared_to(location_position(location_id))
 		if candidate < distance:
 			distance = candidate
@@ -102,13 +112,13 @@ static func from_dict(data: Dictionary) -> WorldState:
 		if world.npcs.has(npc_id):
 			(world.npcs[npc_id] as NPCData).restore(DataUtils.dictionary(npc_rows[npc_id]))
 	var state := DataUtils.dictionary(data.get("world_state", {}))
-	world.game_minutes = maxf(0.0, DataUtils.number(state.get("game_minutes", 600.0), 600.0))
-	world.last_player_location = str(state.get("last_player_location", "player_area"))
-	world.echo_location_id = str(state.get("echo_location_id", "street"))
+	world.game_minutes = maxf(0.0, DataUtils.number(state.get("game_minutes", 1020.0), 1020.0))
+	world.last_player_location = LocationRegistry.canonical(str(state.get("last_player_location", "PLAYER_QUARTERS")))
+	world.echo_location_id = LocationRegistry.canonical(str(state.get("echo_location_id", "TOWN_SQUARE")))
 	world.echo_turn_index = maxi(0, int(DataUtils.number(state.get("echo_turn_index", 0), 0.0)))
-	var position_data: Variant = state.get("player_position", [0, 0, 8])
+	var position_data: Variant = state.get("player_position", [0, 0, 11])
 	if position_data is Array and position_data.size() == 3:
-		world.player_position = Vector3(DataUtils.number(position_data[0], 0.0), DataUtils.number(position_data[1], 0.0), DataUtils.number(position_data[2], 8.0))
+		world.player_position = Vector3(DataUtils.number(position_data[0], 0.0), DataUtils.number(position_data[1], 0.0), DataUtils.number(position_data[2], 11.0))
 	var rows: Variant = data.get("event_history", [])
 	if rows is Array:
 		for row: Variant in rows:

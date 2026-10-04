@@ -2,9 +2,9 @@
   {
     "id": "alex",
     "display_name": "Alex",
-    "role": "Shopkeeper",
-    "home_location_id": "residential",
-    "initial_location_id": "shop",
+    "role": "Merchant / general goods trader",
+    "home_location_id": "RESIDENTIAL_ROW",
+    "initial_location_id": "MERCHANT_SHOP",
     "personality": {
       "aggression": 0.18,
       "empathy": 0.55,
@@ -15,9 +15,9 @@
       "forgiveness": 0.65
     },
     "color": [
-      0.72,
-      0.53,
-      0.29
+      0.62,
+      0.43,
+      0.24
     ],
     "relationship_importance": 0.7,
     "slot_offset": [
@@ -39,17 +39,17 @@
     "schedule": [
       {
         "start_minute": 0,
-        "location_id": "residential",
+        "location_id": "RESIDENTIAL_ROW",
         "activity": "resting"
       },
       {
         "start_minute": 480,
-        "location_id": "shop",
+        "location_id": "MERCHANT_SHOP",
         "activity": "working"
       },
       {
         "start_minute": 1080,
-        "location_id": "residential",
+        "location_id": "RESIDENTIAL_ROW",
         "activity": "resting"
       }
     ]
@@ -57,9 +57,9 @@
   {
     "id": "sarah",
     "display_name": "Sarah",
-    "role": "Close friend",
-    "home_location_id": "residential",
-    "initial_location_id": "park",
+    "role": "Close friend / town resident",
+    "home_location_id": "RESIDENTIAL_ROW",
+    "initial_location_id": "RESIDENTIAL_ROW",
     "personality": {
       "aggression": 0.12,
       "empathy": 0.88,
@@ -70,9 +70,9 @@
       "forgiveness": 0.82
     },
     "color": [
-      0.68,
-      0.45,
-      0.76
+      0.32,
+      0.43,
+      0.23
     ],
     "relationship_importance": 1,
     "slot_offset": [
@@ -94,17 +94,22 @@
     "schedule": [
       {
         "start_minute": 0,
-        "location_id": "residential",
+        "location_id": "RESIDENTIAL_ROW",
         "activity": "resting"
       },
       {
         "start_minute": 540,
-        "location_id": "park",
+        "location_id": "RESIDENTIAL_ROW",
         "activity": "socializing"
       },
       {
+        "start_minute": 780,
+        "location_id": "TOWN_SQUARE",
+        "activity": "meeting friends"
+      },
+      {
         "start_minute": 1080,
-        "location_id": "residential",
+        "location_id": "RESIDENTIAL_ROW",
         "activity": "relaxing"
       }
     ]
@@ -112,9 +117,9 @@
   {
     "id": "mike",
     "display_name": "Mike",
-    "role": "Neighbor",
-    "home_location_id": "residential",
-    "initial_location_id": "residential",
+    "role": "Neighbor / observant local",
+    "home_location_id": "RESIDENTIAL_ROW",
+    "initial_location_id": "RESIDENTIAL_ROW",
     "personality": {
       "aggression": 0.35,
       "empathy": 0.45,
@@ -125,9 +130,9 @@
       "forgiveness": 0.45
     },
     "color": [
-      0.3,
-      0.65,
-      0.52
+      0.36,
+      0.42,
+      0.46
     ],
     "relationship_importance": 0.55,
     "slot_offset": [
@@ -149,17 +154,17 @@
     "schedule": [
       {
         "start_minute": 0,
-        "location_id": "residential",
+        "location_id": "RESIDENTIAL_ROW",
         "activity": "resting"
       },
       {
         "start_minute": 660,
-        "location_id": "street",
-        "activity": "watching the neighborhood"
+        "location_id": "TOWN_SQUARE",
+        "activity": "watching the town"
       },
       {
         "start_minute": 1020,
-        "location_id": "residential",
+        "location_id": "RESIDENTIAL_ROW",
         "activity": "relaxing"
       }
     ]
@@ -167,9 +172,9 @@
   {
     "id": "emma",
     "display_name": "Emma",
-    "role": "Cafe worker",
-    "home_location_id": "residential",
-    "initial_location_id": "cafe",
+    "role": "Tavern worker",
+    "home_location_id": "RESIDENTIAL_ROW",
+    "initial_location_id": "TAVERN",
     "personality": {
       "aggression": 0.15,
       "empathy": 0.7,
@@ -180,9 +185,9 @@
       "forgiveness": 0.65
     },
     "color": [
-      0.78,
-      0.4,
-      0.4
+      0.52,
+      0.22,
+      0.19
     ],
     "relationship_importance": 0.6,
     "slot_offset": [
@@ -204,17 +209,17 @@
     "schedule": [
       {
         "start_minute": 0,
-        "location_id": "residential",
+        "location_id": "RESIDENTIAL_ROW",
         "activity": "resting"
       },
       {
         "start_minute": 420,
-        "location_id": "cafe",
+        "location_id": "TAVERN",
         "activity": "working"
       },
       {
         "start_minute": 1140,
-        "location_id": "residential",
+        "location_id": "RESIDENTIAL_ROW",
         "activity": "resting"
       }
     ]
@@ -222,9 +227,9 @@
   {
     "id": "david",
     "display_name": "David",
-    "role": "Troublemaker",
-    "home_location_id": "residential",
-    "initial_location_id": "alley",
+    "role": "Rogue / drifter",
+    "home_location_id": "RESIDENTIAL_ROW",
+    "initial_location_id": "BACK_ALLEY",
     "personality": {
       "aggression": 0.85,
       "empathy": 0.22,
@@ -235,9 +240,9 @@
       "forgiveness": 0.12
     },
     "color": [
-      0.65,
       0.28,
-      0.25
+      0.21,
+      0.2
     ],
     "relationship_importance": 0.5,
     "slot_offset": [
@@ -259,17 +264,17 @@
     "schedule": [
       {
         "start_minute": 0,
-        "location_id": "alley",
+        "location_id": "BACK_ALLEY",
         "activity": "lingering"
       },
       {
         "start_minute": 720,
-        "location_id": "street",
+        "location_id": "TOWN_SQUARE",
         "activity": "looking for trouble"
       },
       {
         "start_minute": 1020,
-        "location_id": "alley",
+        "location_id": "BACK_ALLEY",
         "activity": "lingering"
       }
     ]
@@ -277,9 +282,9 @@
   {
     "id": "noah",
     "display_name": "Noah",
-    "role": "Neighborhood watch",
-    "home_location_id": "residential",
-    "initial_location_id": "street",
+    "role": "Town Watch",
+    "home_location_id": "RESIDENTIAL_ROW",
+    "initial_location_id": "WATCH_POST",
     "personality": {
       "aggression": 0.3,
       "empathy": 0.6,
@@ -290,9 +295,9 @@
       "forgiveness": 0.4
     },
     "color": [
-      0.32,
-      0.46,
-      0.7
+      0.24,
+      0.34,
+      0.44
     ],
     "relationship_importance": 0.8,
     "slot_offset": [
@@ -314,22 +319,22 @@
     "schedule": [
       {
         "start_minute": 0,
-        "location_id": "residential",
+        "location_id": "RESIDENTIAL_ROW",
         "activity": "resting"
       },
       {
         "start_minute": 360,
-        "location_id": "street",
-        "activity": "patrolling"
+        "location_id": "WATCH_POST",
+        "activity": "keeping watch"
       },
       {
         "start_minute": 840,
-        "location_id": "park",
-        "activity": "patrolling"
+        "location_id": "TOWN_SQUARE",
+        "activity": "patrolling the square"
       },
       {
         "start_minute": 1140,
-        "location_id": "residential",
+        "location_id": "RESIDENTIAL_ROW",
         "activity": "resting"
       }
     ]

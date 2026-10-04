@@ -97,7 +97,7 @@ func score_actions(world: WorldState, npc: NPCData, turn: int, at_time: float) -
 		var risk := float(definition.get("risk", 0.0)) * (1.0 - float(traits["risk_taking"])) * 0.16
 		risk += float(npc.personality["courage"]) * 0.035 if not positive else 0.0
 		var reputation_context := float(world.reputation.values["danger"]) * 0.015 if not positive else float(world.reputation.values["kindness"]) * 0.012
-		if npc.role == "Neighborhood watch" and not positive:
+		if npc.id == "noah" and not positive:
 			risk += float(world.reputation.values["danger"]) * 0.04
 		var variation := _variation(world.echo_seed, turn, npc.id, action_type)
 		var score := fit + relationship_context + target_fit + opportunity + context + novelty + reputation_context - repetition_penalty - risk + variation

@@ -1,5 +1,10 @@
 # Echo Me architecture rules
 
+- Official visual direction: stylized semi-realistic low-fantasy old town at sunset; merchant, tavern, houses, square, alley, town watch. No modern urban props.
+- Player physics/controller remain authoritative and unchanged. Imported character models belong under Body/VisualRoot. Animation and camera presentation never own movement or collision.
+- Preserve NPC IDs, relationships, and memories when retheming. Canonical town locations must accept legacy save aliases. World geometry is fixed authored procedural blockout, batched where practical.
+- Centralize environment/NPC materials in WorldVisualConfig; no extra shadows/GI or expensive effects. Keep missing animation states inactive until real clips exist.
+
 - Godot 4.7.2 Standard, GDScript only, Compatibility renderer, Windows first.
 - "AI should provide the illusion of intelligence. The game engine should do the actual thinking."
 - Decisions use discrete Utility AI, structured memory, relationships, personality, needs, schedules, world state, and event history. NPCs perceive PLAYER actions; actual PLAYER/ECHO source is internal debug data.

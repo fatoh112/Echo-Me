@@ -15,7 +15,7 @@ static func apply(npc: NPCData, action: WorldAction, reputation: ReputationSyste
 			multiplier = 0.85 + float(npc.personality["empathy"]) * 0.3
 		if action.action_type == "GIVE" and effect > 0.0:
 			multiplier += float(npc.personality["greed"]) * 0.2
-		if npc.role == "Neighborhood watch" and action.action_type in ["STEAL", "THREATEN", "BETRAY", "INSULT"]:
+		if npc.id == "noah" and action.action_type in ["STEAL", "THREATEN", "BETRAY", "INSULT"]:
 			multiplier *= 1.35
 			if value_name == "trust":
 				var repeated := 0

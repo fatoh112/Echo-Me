@@ -40,7 +40,10 @@ func refresh(npc_id: String = "") -> void:
 	if selected.is_empty():
 		selected = nearby_id if world.npcs.has(nearby_id) else "alex"
 	var npc: NPCData = world.npcs[selected]
-	var lines: Array[String] = ["PLAYER / ECHO PROFILE", "trait             player / echo"]
+	var lines: Array[String] = [
+		"Current Zone: " + world.last_player_location,
+		"PLAYER / ECHO PROFILE", "trait             player / echo",
+	]
 	for trait_name in PlayerBehaviorProfile.TRAIT_NAMES:
 		lines.append("%s: %.2f / %.2f" % [trait_name, float(world.player_profile.traits[trait_name]), float(world.echo_profile.traits[trait_name])])
 	lines.append("Echo seed: %d; distortion <= %.3f" % [world.echo_seed, EchoBehaviorProfile.MAX_DISTORTION])
