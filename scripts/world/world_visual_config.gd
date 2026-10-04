@@ -1,10 +1,10 @@
 extends RefCounted
 class_name WorldVisualConfig
 
-const SUN_COLOR := Color(1.0, 0.76, 0.49)
-const SUN_ENERGY := 1.15
-const AMBIENT_COLOR := Color(0.68, 0.73, 0.81)
-const AMBIENT_ENERGY := 0.62
+const SUN_COLOR := Color(1.0, 0.82, 0.65)
+const SUN_ENERGY := 1.18
+const AMBIENT_COLOR := Color(0.68, 0.75, 0.88)
+const AMBIENT_ENERGY := 0.66
 const PALETTE: Dictionary = {
 	"stone": Color(0.48, 0.43, 0.36), "paving": Color(0.52, 0.48, 0.41),
 	"wood": Color(0.23, 0.14, 0.085), "wood_light": Color(0.43, 0.29, 0.16),
@@ -31,7 +31,7 @@ static func material(identity: String) -> StandardMaterial3D:
 	if not _materials.has(identity):
 		var result := StandardMaterial3D.new()
 		result.albedo_color = PALETTE.get(identity, PALETTE["stone"])
-		result.roughness = 0.94
+		result.roughness = 0.86
 		result.vertex_color_use_as_albedo = true
 		if identity == "metal":
 			result.metallic = 0.25
@@ -41,3 +41,35 @@ static func material(identity: String) -> StandardMaterial3D:
 			result.emission_energy_multiplier = 0.65
 		_materials[identity] = result
 	return _materials[identity]
+
+
+static func tune_environment(environment: Environment, low_quality: bool = false) -> void:
+	environment.tonemap_mode = Environment.TONE_MAPPER_ACES
+	environment.tonemap_exposure = 0.92
+	environment.tonemap_white = 6.0
+	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	environment.ambient_light_color = AMBIENT_COLOR
+	environment.ambient_light_energy = AMBIENT_ENERGY
+	environment.reflected_light_source = Environment.REFLECTION_SOURCE_BG
+	environment.ssao_enabled = not low_quality
+	environment.ssao_radius = 1.15
+	environment.ssao_intensity = 1.05
+	environment.ssao_power = 1.25
+	environment.ssao_detail = 0.18
+	environment.ssao_horizon = 0.055
+	environment.ssao_sharpness = 0.82
+	environment.ssao_light_affect = 0.18
+	environment.glow_enabled = not low_quality
+	environment.glow_intensity = 0.16
+	environment.glow_strength = 0.72
+	environment.glow_bloom = 0.035
+	environment.glow_hdr_threshold = 1.5
+	environment.glow_blend_mode = Environment.GLOW_BLEND_MODE_MIX
+	environment.fog_enabled = true
+	environment.fog_mode = Environment.FOG_MODE_DEPTH
+	environment.fog_light_color = Color(0.43, 0.49, 0.57)
+	environment.fog_light_energy = 0.72
+	environment.fog_sun_scatter = 0.025
+	environment.fog_depth_begin = 46.0
+	environment.fog_depth_end = 138.0
+	environment.fog_depth_curve = 1.24

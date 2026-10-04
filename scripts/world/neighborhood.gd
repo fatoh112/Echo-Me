@@ -8,8 +8,14 @@ var assets: AssetTownBuilder
 var locations_root: Node3D
 var visual_instance_count := 0
 var visual_batch_count := 0
+var baked_chunk_count := 0
+var bakeable_vertex_count := 0
 
 func build(locations: Dictionary) -> void:
+	if has_node("LightmapGI") and has_node("SlavicTown"):
+		_restore_baked_town()
+		return
+	_build_lightmap()
 	_build_lighting()
 	# Tiny bespoke signs/lanterns share the NPC palette. All major town visuals
 	# are imported pack meshes. No old blockout building or paving is generated.
@@ -44,15 +50,60 @@ func build(locations: Dictionary) -> void:
 	builder.flush()
 	visual_instance_count = assets.instance_count + builder.instance_count
 	visual_batch_count = assets.batch_count + builder.batch_count + 1
+	baked_chunk_count = assets.batch_count
+	bakeable_vertex_count = assets.lightmap_vertex_count
+
+func _restore_baked_town() -> void:
+	var low_quality := "--echo-low-graphics" in OS.get_cmdline_user_args()
+	var environment := (get_node("LightmapGI/Environment/WorldEnvironment") as WorldEnvironment).environment
+	WorldVisualConfig.tune_environment(environment, low_quality)
+	var sun := get_node("LightmapGI/Environment/Sunset") as DirectionalLight3D
+	sun.shadow_enabled = not low_quality
+	for probe: ReflectionProbe in find_children("*", "ReflectionProbe", true, false):
+		probe.visible = not low_quality
+	assets = AssetTownBuilder.new()
+	assets.restore_baked_metrics(self)
+	builder = TownGeometry.new()
+	builder.geometry = get_node("TownGeometry")
+	builder.props = get_node("Props")
+	builder.colliders = get_node("TownCollision")
+	var selection: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/environment/town_asset_selection.json"))
+	builder.instance_count = int(selection.get("small_primitive_instances", 0))
+	builder.batch_count = builder.props.get_child_count()
+	locations_root = get_node("Locations")
+	visual_instance_count = assets.instance_count + builder.instance_count
+	visual_batch_count = assets.batch_count + builder.batch_count + 1
+	baked_chunk_count = assets.batch_count
+	bakeable_vertex_count = assets.lightmap_vertex_count
+
+
+func _build_lightmap() -> void:
+	var lightmap := LightmapGI.new()
+	lightmap.name = "LightmapGI"
+	lightmap.directional = false
+	lightmap.bounces = 3
+	lightmap.bounce_indirect_energy = 0.85
+	lightmap.generate_probes_subdiv = LightmapGI.GENERATE_PROBES_SUBDIV_16
+	lightmap.texel_scale = 1.0
+	lightmap.quality = LightmapGI.BAKE_QUALITY_MEDIUM
+	lightmap.max_texture_size = 8192
+	lightmap.use_texture_for_bounces = true
+	lightmap.use_denoiser = true
+	lightmap.shadowmask_mode = 1 # SHADOWMASK_MODE_REPLACE
+	lightmap.environment_mode = LightmapGI.ENVIRONMENT_MODE_SCENE
+	lightmap.light_data = LightmapGIData.new()
+	add_child(lightmap)
 
 func _ground() -> void:
 	var ground := MeshInstance3D.new()
 	ground.name = "DirtGround"
 	var plane := PlaneMesh.new()
 	plane.size = Vector2(180, 180)
+	plane.add_uv2 = true
 	ground.mesh = plane
 	ground.material_override = preload("res://assets/environment/slavic_town/materials/town_ground.tres")
 	ground.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	ground.gi_mode = GeometryInstance3D.GI_MODE_STATIC
 	add_child(ground)
 	assets.box_collision(Vector3(0, -0.18, 0), Vector3(60, 0.36, 60))
 	# Flatten only the road's vertical relief to about 1 cm. Physics remains
@@ -72,12 +123,17 @@ func _ground() -> void:
 				_road(Vector3(x, 0.003, z + offset))
 	var random := RandomNumberGenerator.new()
 	random.seed = 401
-	for row in range(11):
-		for column in range(11):
-			var point := Vector3(-4.8 + column * 0.86, 0.003, -4.0 + row * 0.81)
-			point.x += random.randf_range(-0.05, 0.05)
-			point.z += random.randf_range(-0.05, 0.05)
-			_model("EA03_Environment_Road_Cobble_01b", point, random.randf_range(-0.12, 0.12), Vector3(0.51, 0.025, 0.51), Color(0.63, 0.59, 0.53))
+	# Extend the intentional stone apron around the covered well. Broken placement,
+	# small rotations and restrained value variation soften the old 11x11 tile grid.
+	for row in range(16):
+		for column in range(19):
+			var point := Vector3(-9.0 + column * 1.0, 0.004, -7.2 + row * 0.96)
+			point.x += random.randf_range(-0.16, 0.16)
+			point.z += random.randf_range(-0.16, 0.16)
+			var tile_scale := random.randf_range(0.42, 0.50)
+			var value := random.randf_range(0.93, 1.07)
+			var tile_tint := Color(0.63, 0.60, 0.55) * value
+			_model("EA03_Environment_Road_Cobble_01b", point, random.randf_range(-0.45, 0.45), Vector3(tile_scale, 0.026, tile_scale), tile_tint)
 
 func _road(point: Vector3, yaw: float = 0.0) -> void:
 	_model("EA03_Environment_Road_Cobble_01a", point, yaw, Vector3(0.46, 0.025, 0.53), Color(0.63, 0.59, 0.53))
@@ -179,12 +235,22 @@ func _boundary() -> void:
 	for index in range(16):
 		var x := -25.0 + index * 3.2
 		_model("EA03_Plant_Grass_01c", Vector3(x, 0.01, 28.0), float(index), Vector3.ONE * 0.62)
+	for point: Vector3 in [Vector3(-10.5, 0.01, -18.5), Vector3(-12.7, 0.01, -18.3), Vector3(12.4, 0.01, -18.4), Vector3(14.5, 0.01, -18.1), Vector3(-23.2, 0.01, -9), Vector3(26.9, 0.01, 6), Vector3(-22.8, 0.01, 5), Vector3(23.5, 0.01, 17.8), Vector3(-9.7, 0.01, 18.7), Vector3(20.3, 0.01, -25.7), Vector3(-18.4, 0.01, -25.4)]:
+		_model("EA03_Plant_Grass_01c", point, point.x * 0.13, Vector3.ONE * 0.38)
 	# Authored irregular clusters outside the playable fence, using low-vertex
 	# source trees rather than a row of identical background silhouettes.
 	var background: Array[Vector3] = [Vector3(-35, 0, -37), Vector3(-38, 0, -43), Vector3(-31, 0, -47), Vector3(-16, 0, -38), Vector3(-9, 0, -44), Vector3(-4, 0, -40), Vector3(18, 0, -37), Vector3(22, 0, -44), Vector3(33, 0, -40), Vector3(42, 0, -24), Vector3(39, 0, -18), Vector3(45, 0, -8), Vector3(37, 0, 17), Vector3(43, 0, 22), Vector3(35, 0, 32), Vector3(19, 0, 39), Vector3(11, 0, 35), Vector3(7, 0, 42), Vector3(-15, 0, 37), Vector3(-22, 0, 44), Vector3(-31, 0, 37), Vector3(-39, 0, 23), Vector3(-43, 0, 17), Vector3(-36, 0, -6), Vector3(-42, 0, -13)]
 	var trees := ["EA03_Nature_Tree_06b", "EA03_Nature_Tree_01b", "EA03_Nature_Tree_02c"]
 	for index in range(background.size()):
 		_model(trees[index % 3], background[index], index * 0.3, Vector3.ONE * (0.62 + (index % 4) * 0.1))
+	# Distant roof groups break the abrupt fence/horizon line while remaining outside
+	# the collision area. Their scale and cool value keep the playable facades dominant.
+	var skyline: Array[Vector3] = [Vector3(-43, 0, -42), Vector3(-27, 0, -51), Vector3(-7, 0, -55), Vector3(16, 0, -49), Vector3(38, 0, -44), Vector3(51, 0, -25), Vector3(55, 0, -3), Vector3(53, 0, 21), Vector3(39, 0, 47), Vector3(15, 0, 54), Vector3(-10, 0, 52), Vector3(-34, 0, 43), Vector3(-51, 0, 21), Vector3(-54, 0, -5)]
+	for index in range(skyline.size()):
+		var house: String = ["house_cottage", "house_inn", "house_merchant"][index % 3]
+		var yaw := float(index) * 0.81
+		var tint: Color = [Color(0.57, 0.65, 0.72), Color(0.69, 0.63, 0.55), Color(0.57, 0.62, 0.67)][index % 3]
+		_prefab(house, skyline[index], yaw, tint * 0.8)
 
 func _prefab(identity: String, position_value: Vector3, yaw: float = 0.0, tint: Color = Color.WHITE) -> void:
 	assets.place(PREFABS + identity + ".tscn", position_value, yaw, Vector3.ONE, tint)
@@ -228,9 +294,10 @@ func _sign(text: String, position_value: Vector3, yaw: float, width: float) -> v
 	locations_root.add_child(label)
 
 func _build_lighting() -> void:
+	var low_quality := "--echo-low-graphics" in OS.get_cmdline_user_args()
 	var holder := Node3D.new()
 	holder.name = "Environment"
-	add_child(holder)
+	get_node("LightmapGI").add_child(holder)
 	var environment := Environment.new()
 	environment.background_mode = Environment.BG_SKY
 	var sky := Sky.new()
@@ -242,18 +309,24 @@ func _build_lighting() -> void:
 	sky_material.sun_angle_max = 8.0
 	sky.sky_material = sky_material
 	environment.sky = sky
-	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	environment.ambient_light_color = WorldVisualConfig.AMBIENT_COLOR
-	environment.ambient_light_energy = WorldVisualConfig.AMBIENT_ENERGY
+	WorldVisualConfig.tune_environment(environment, low_quality)
 	var world_environment := WorldEnvironment.new()
+	world_environment.name = "WorldEnvironment"
 	world_environment.environment = environment
 	holder.add_child(world_environment)
 	var sun := DirectionalLight3D.new()
 	sun.name = "Sunset"
-	sun.rotation_degrees = Vector3(-24, -38, 0)
+	sun.rotation_degrees = Vector3(-32, -32, 0)
 	sun.light_color = WorldVisualConfig.SUN_COLOR
 	sun.light_energy = WorldVisualConfig.SUN_ENERGY
-	sun.shadow_enabled = false
+	sun.light_bake_mode = Light3D.BAKE_DISABLED
+	sun.shadow_enabled = not low_quality
+	sun.shadow_bias = 0.035
+	sun.shadow_normal_bias = 0.55
+	sun.shadow_blur = 1.5
+	sun.shadow_opacity = 0.52
+	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
+	sun.directional_shadow_max_distance = 42.0
 	holder.add_child(sun)
 	for point: Vector3 in [Vector3(-11, 2.8, -8), Vector3(11, 2.8, -8)]:
 		var lamp := OmniLight3D.new()
@@ -262,4 +335,19 @@ func _build_lighting() -> void:
 		lamp.light_energy = 0.5
 		lamp.omni_range = 4
 		lamp.shadow_enabled = false
+		lamp.light_bake_mode = Light3D.BAKE_DISABLED
 		holder.add_child(lamp)
+	_add_reflection_probe("SquareProbe", Vector3(-0.3, 2.5, 0.5), Vector3(12, 5, 14), not low_quality)
+	_add_reflection_probe("MarketInnProbe", Vector3(0, 2.5, -12), Vector3(20, 5, 10), not low_quality)
+
+func _add_reflection_probe(identity: String, point: Vector3, size: Vector3, enabled: bool = true) -> void:
+	var probe := ReflectionProbe.new()
+	probe.name = identity
+	probe.position = point
+	probe.extents = size
+	probe.box_projection = true
+	probe.intensity = 0.35
+	probe.max_distance = 36.0
+	probe.update_mode = ReflectionProbe.UPDATE_ONCE
+	probe.visible = enabled
+	add_child(probe)

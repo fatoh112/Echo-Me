@@ -28,6 +28,7 @@ func run(game: Node3D, check: Callable) -> void:
 	check.call(visual.animation_tree.active == all_clips, "Visual: tree remains inactive when locomotion clips are missing")
 	# Mesh/material inputs are valid and capped for the target GPU.
 	for node: MeshInstance3D in visual.model.find_children("*", "MeshInstance3D", true, false):
+		check.call(node.gi_mode == GeometryInstance3D.GI_MODE_DYNAMIC, "Visual: moving player mesh receives dynamic light probes")
 		check.call(node.mesh != null and node.mesh.get_surface_count() == 2, "Visual: both imported material surfaces retained")
 		for index in range(node.mesh.get_surface_count()):
 			var material := node.get_surface_override_material(index) as StandardMaterial3D
@@ -35,23 +36,50 @@ func run(game: Node3D, check: Callable) -> void:
 			check.call(material.albedo_texture != null and material.albedo_texture.get_width() <= 1024, "Visual: player texture import capped to 1K")
 	# The old 1,000 tiny paving-box count described the retired blockout.
 	# Preserve its density/batching intent using imported mesh complexity instead.
-	check.call(game.neighborhood.visual_batch_count <= 40 and game.neighborhood.assets.vertex_count > 100000 and game.neighborhood.assets.instance_count > 200, "Visual: detailed imported town uses bounded MultiMesh batches")
+	check.call(game.neighborhood.visual_batch_count <= 100 and game.neighborhood.assets.vertex_count > 100000 and game.neighborhood.assets.instance_count > 200, "Visual: detailed imported town uses bounded static spatial mesh batches")
 	var roof_arrays: Array = game.neighborhood.builder._mesh("roof").surface_get_arrays(0)
 	var roof_vertices: PackedVector3Array = roof_arrays[Mesh.ARRAY_VERTEX]
 	var roof_normals: PackedVector3Array = roof_arrays[Mesh.ARRAY_NORMAL]
 	for index in range(roof_vertices.size()):
 		if roof_vertices[index].y > 0.9 and absf(roof_normals[index].z) < 0.8:
 			check.call(roof_normals[index].y > 0, "Visual: roof slope normals face upward")
-	check.call(game.neighborhood.get_node("Environment").find_children("*", "DirectionalLight3D", true, false).size() == 1, "Visual: one primary sun")
-	check.call(game.neighborhood.get_node("Environment").find_children("*", "OmniLight3D", true, false).size() == 2, "Visual: only two local lamps")
-	for light: Light3D in game.neighborhood.get_node("Environment").find_children("*", "Light3D", true, false):
-		check.call(not light.shadow_enabled, "Visual: no shadow-casting local lights")
+	var lightmap := game.neighborhood.get_node("LightmapGI") as LightmapGI
+	var environment_holder := game.neighborhood.get_node("LightmapGI/Environment") as Node3D
+	var world_environment := environment_holder.get_node("WorldEnvironment") as WorldEnvironment
+	var low_quality := "--echo-low-graphics" in OS.get_cmdline_user_args()
+	check.call(lightmap != null and lightmap.light_data != null and lightmap.generate_probes_subdiv == LightmapGI.GENERATE_PROBES_SUBDIV_16, "Visual: LightmapGI data and dynamic probes are prepared")
+	check.call(world_environment.environment.tonemap_mode == Environment.TONE_MAPPER_ACES and world_environment.environment.ssao_enabled == not low_quality and world_environment.environment.fog_enabled and world_environment.environment.glow_enabled == not low_quality, "Visual: ACES, Compatibility effects and depth fog quality profile")
+	check.call(environment_holder.find_children("*", "DirectionalLight3D", true, false).size() == 1, "Visual: one primary sun")
+	check.call(environment_holder.find_children("*", "OmniLight3D", true, false).size() == 2, "Visual: only two local lamps")
+	var sun := environment_holder.find_child("Sunset", true, false) as DirectionalLight3D
+	check.call(sun != null and sun.shadow_enabled == not low_quality and sun.light_bake_mode == Light3D.BAKE_DISABLED and sun.directional_shadow_mode == DirectionalLight3D.SHADOW_ORTHOGONAL, "Visual: direct-only real-time sun and single shadow map quality profile")
+	for light: OmniLight3D in environment_holder.find_children("*", "OmniLight3D", true, false):
+		check.call(not light.shadow_enabled, "Visual: local lamp shadows disabled")
+	check.call(game.neighborhood.find_children("*", "ReflectionProbe", true, false).size() == 2, "Visual: two localized reflection probes")
+	for reflection_probe: ReflectionProbe in game.neighborhood.find_children("*", "ReflectionProbe", true, false):
+		check.call(reflection_probe.visible == not low_quality, "Visual: reflection capture follows low/medium profile")
+	var bake_chunks: Array = game.neighborhood.get_node("SlavicTown").find_children("*", "MeshInstance3D", false, false)
+	check.call(bake_chunks.size() == game.neighborhood.assets.batch_count and bake_chunks.size() > 50, "Visual: spatially merged town geometry has a bounded render-node count")
+	for chunk: MeshInstance3D in bake_chunks:
+		var arrays: Array = chunk.mesh.surface_get_arrays(0)
+		var uv2: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV2]
+		check.call(chunk.gi_mode == GeometryInstance3D.GI_MODE_STATIC and uv2.size() == chunk.mesh.surface_get_array_len(0), "Visual: every static town mesh has unique complete UV2")
+		var material := chunk.mesh.surface_get_material(0) as StandardMaterial3D
+		check.call(material != null and material.albedo_texture != null and material.metallic <= 0.05 and material.roughness >= 0.75, "Visual: shared low-metal PBR material and atlas texture")
+	var ground := game.neighborhood.get_node("DirtGround") as MeshInstance3D
+	check.call(ground != null and ground.gi_mode == GeometryInstance3D.GI_MODE_STATIC and ground.mesh is PlaneMesh and (ground.mesh as PlaneMesh).add_uv2, "Visual: dirt ground has bakeable UV2")
+	var decorative_batches: Array = game.neighborhood.get_node("Props").find_children("*", "MultiMeshInstance3D", false, false)
+	check.call(decorative_batches.size() == game.neighborhood.builder.batch_count and decorative_batches.size() > 0, "Visual: handcrafted details use a few dedicated prop batches")
+	for prop: MultiMeshInstance3D in decorative_batches:
+		check.call(prop.gi_mode == GeometryInstance3D.GI_MODE_DISABLED and prop.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF, "Visual: tiny primitive decoration avoids GI and shadows")
 	for zone in LocationRegistry.IDS:
 		check.call(game.world.locations.has(zone) and game.neighborhood.locations_root.has_node(zone), "Visual: official zone marker " + zone)
 		check.call(game.world.closest_location(game.world.location_position(zone)) == zone, "Visual: zone bounds contain official anchor " + zone)
 	for npc_id: String in game.npc_manager.entities:
 		var entity: NPCController = game.npc_manager.entities[npc_id]
 		check.call(entity.visual_root.piece_count >= 16 and not entity.body_mesh.visible, "Visual: distinct primitive silhouette " + npc_id)
+		for part: GeometryInstance3D in entity.visual_root.find_children("*", "GeometryInstance3D", true, false):
+			check.call(part.gi_mode == GeometryInstance3D.GI_MODE_DYNAMIC, "Visual: moving NPC part receives dynamic light probes " + npc_id)
 	var exclude: Array[RID] = [game.player.get_rid()]
 	for entity: NPCController in game.npc_manager.entities.values():
 		exclude.append((entity.get_node("Body") as StaticBody3D).get_rid())

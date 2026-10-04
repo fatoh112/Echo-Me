@@ -143,6 +143,7 @@ func _inspect_and_clean(node: Node) -> void:
 			animation_player = child
 		if child is MeshInstance3D:
 			child.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			child.gi_mode = GeometryInstance3D.GI_MODE_DYNAMIC
 			for index in range(child.mesh.get_surface_count()):
 				var source := child.mesh.surface_get_material(index) as StandardMaterial3D
 				if source != null:

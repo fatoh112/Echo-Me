@@ -15,6 +15,7 @@ func replace_model(scene: PackedScene) -> void:
 		child.queue_free()
 	_humanoid = scene.instantiate() as Node3D
 	add_child(_humanoid)
+	_set_dynamic_gi(_humanoid)
 	animation_player = _humanoid.find_child("AnimationPlayer", true, false) as AnimationPlayer
 	animation_tree = _humanoid.find_child("AnimationTree", true, false) as AnimationTree
 	piece_count = 0
@@ -77,4 +78,12 @@ func build(npc_id: String) -> void:
 		builder.cylinder(Vector3(0, height * 1.005, 0), 0.32, 0.19, "metal")
 		builder.box(Vector3(0, height * 0.72, 0.22), Vector3(0.05, height * 0.20, 0.025), "cream")
 	builder.flush()
+	for instance: GeometryInstance3D in get_node("Props").find_children("*", "GeometryInstance3D", true, false):
+		instance.gi_mode = GeometryInstance3D.GI_MODE_DYNAMIC
 	piece_count = builder.instance_count
+
+func _set_dynamic_gi(node: Node) -> void:
+	if node is GeometryInstance3D:
+		(node as GeometryInstance3D).gi_mode = GeometryInstance3D.GI_MODE_DYNAMIC
+	for child: Node in node.get_children():
+		_set_dynamic_gi(child)

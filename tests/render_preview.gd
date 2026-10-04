@@ -13,6 +13,15 @@ func _run() -> void:
 	await _capture("player_street")
 	await _view("main_street", Vector3(4, 0, 7), 0.15)
 	await _view("town_square", Vector3(4.5, 0, 5.5), 0.38)
+	var ground_camera := Camera3D.new()
+	ground_camera.fov = 55
+	game.add_child(ground_camera)
+	ground_camera.position = Vector3(1.8, 2.1, 8.0)
+	ground_camera.look_at(Vector3(0.4, 0.02, 5.2))
+	ground_camera.current = true
+	await _capture("ground_detail")
+	ground_camera.free()
+	(game.player.get_node("CameraPivot/Camera3D") as Camera3D).current = true
 	await _view("merchant", Vector3(-11, 0, -3.5), 0)
 	await _view("tavern", Vector3(11, 0, -3.5), 0)
 	await _view("residential_row", Vector3(12, 0, 12), PI)
@@ -27,6 +36,15 @@ func _run() -> void:
 	watch_camera.current = true
 	await _capture("watch_post")
 	watch_camera.free()
+	(game.player.get_node("CameraPivot/Camera3D") as Camera3D).current = true
+	var roof_camera := Camera3D.new()
+	roof_camera.fov = 60
+	game.add_child(roof_camera)
+	roof_camera.position = Vector3(-16.1, 19.0, 8.0)
+	roof_camera.look_at(Vector3(-16.1, 2.6, 8.0), Vector3.FORWARD)
+	roof_camera.current = true
+	await _capture("watch_roof_topdown")
+	roof_camera.free()
 	(game.player.get_node("CameraPivot/Camera3D") as Camera3D).current = true
 	await _view("home_exterior", Vector3(0, 0, 13), PI)
 	var sarah: NPCData = game.world.npcs["sarah"]

@@ -9,18 +9,30 @@ var _exclude: Array[RID] = []
 func run(game: Node3D, check: Callable) -> void:
 	var town: Neighborhood = game.neighborhood
 	check.call(town.assets.sources.size() >= 30, "Environment: diverse real source meshes in the town")
-	check.call(town.assets.vertex_count < 1000000, "Environment: submitted vertex budget below one million")
+	check.call(town.assets.vertex_count < 1000000 and town.bakeable_vertex_count >= town.assets.vertex_count, "Environment: static lightmap geometry remains within vertex budget")
 	check.call(town.builder.instance_count < 120, "Environment: primitives limited to small signs and lanterns")
 	check.call(town.assets.geometry.get_child_count() == town.assets.batch_count, "Environment: one render node per shared mesh")
 	check.call(not town.assets.geometry.is_processing() and not town.assets.geometry.is_physics_processing(), "Environment: decoration has no frame scripts")
 	var atlas := preload("res://assets/environment/slavic_town/materials/slavic_atlas.tres")
 	for path: String in town.assets.sources:
 		check.call(FileAccess.file_exists(path) and ResourceLoader.exists(path), "Environment: source and import exist " + path.get_file())
-	for batch: MultiMeshInstance3D in town.assets.geometry.get_children():
-		var mesh := batch.multimesh.mesh
+	for batch: MeshInstance3D in town.assets.geometry.get_children():
+		var mesh := batch.mesh
+		check.call(batch.gi_mode == GeometryInstance3D.GI_MODE_STATIC, "Environment: imported spatial chunk participates in baked indirect light")
+		var uv2: PackedVector2Array = mesh.surface_get_arrays(0)[Mesh.ARRAY_TEX_UV2]
+		check.call(uv2.size() == mesh.surface_get_array_len(0), "Environment: imported mesh UV2 covers its complete vertex buffer")
 		for surface in range(mesh.get_surface_count()):
-			check.call(mesh.surface_get_material(surface) == atlas, "Environment: canonical colorsheet material shared")
-		check.call(batch.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF, "Environment: imported mesh shadows disabled")
+			var material := mesh.surface_get_material(surface) as StandardMaterial3D
+			check.call(material != null and material.albedo_texture == atlas.albedo_texture, "Environment: original colorsheet texture remains shared across PBR variants")
+		check.call(batch.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON or batch.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF, "Environment: large landmark shadow roles are explicit")
+	check.call(town.assets.geometry.find_children("*", "MeshInstance3D", false, false).size() == town.assets.batch_count, "Environment: one static render node per bake chunk")
+	var shadow_chunks := 0
+	for batch: MeshInstance3D in town.assets.geometry.get_children():
+		if batch.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON:
+			shadow_chunks += 1
+	check.call(shadow_chunks >= 5 and shadow_chunks <= 45 and shadow_chunks < town.assets.batch_count, "Environment: shadow casting is limited to landmarks")
+	var lightmap := town.get_node("LightmapGI") as LightmapGI
+	check.call(lightmap.light_data != null and lightmap.light_data.resource_path == "res://scenes/world/town_lighting.lmbake", "Environment: local LightmapGI bake target is configured")
 	for node: CollisionShape3D in town.assets.collision.get_children():
 		check.call(node.shape is BoxShape3D or node.shape is CylinderShape3D, "Environment: simple authored collision")
 	_exclude.append(game.player.get_rid())

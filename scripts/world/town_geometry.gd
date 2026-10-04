@@ -9,7 +9,9 @@ var _meshes: Dictionary = {}
 var instance_count := 0
 var batch_count := 0
 
-func _init(parent: Node3D) -> void:
+func _init(parent: Node3D = null) -> void:
+	if parent == null:
+		return
 	geometry = Node3D.new()
 	geometry.name = "TownGeometry"
 	parent.add_child(geometry)
@@ -72,7 +74,8 @@ func flush() -> void:
 		node.multimesh = multi
 		node.material_override = WorldVisualConfig.material(parts[1])
 		node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		geometry.add_child(node)
+		node.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
+		props.add_child(node)
 		batch_count += 1
 	_batches.clear()
 

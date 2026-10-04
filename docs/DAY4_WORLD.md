@@ -7,6 +7,10 @@ GDScript, Compatibility renderer. `project.godot`, the Kachujin controller,
 animation library, NPC identities, schedules, action/Echo systems, relationships,
 memories, save schema and migration rules are preserved.
 
+The Day 4.1 lighting and world pass supersedes the original shadow-free scene
+profile. See [DAY4_1_PREMIUM_LIGHTING.md](DAY4_1_PREMIUM_LIGHTING.md) for its
+static LightmapGI setup, captures, measurements, and one remaining editor bake.
+
 The old visible box buildings, primitive fountain, toy trees, market tables,
 barrels, benches and thousands of tiny paving boxes have been replaced. The
 replacement layout passed the original route, collision, camera, interaction,
