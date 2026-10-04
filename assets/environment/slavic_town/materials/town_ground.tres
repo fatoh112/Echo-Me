@@ -1,0 +1,11 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/environment/slavic_town/textures/Pobbles_Sand_Dirt.png" id="1"]
+
+[resource]
+resource_name = "Shared town dirt"
+albedo_texture = ExtResource("1")
+albedo_color = Color(0.72, 0.70, 0.65, 1)
+uv1_scale = Vector3(36, 36, 1)
+roughness = 1.0
+texture_filter = 5

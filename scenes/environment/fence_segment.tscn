@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/environment/slavic_town/glb/glTF/EA03_Fence_Cobble_01a.glb" id="1"]
+
+[sub_resource type="BoxShape3D" id="Box0"]
+size = Vector3(3.7, 1.55, 0.62)
+
+[node name="FenceSegment" type="Node3D"]
+
+[node name="Stonework" parent="." instance=ExtResource("1")]
+position = Vector3(0.172, 0, 0.078)
+
+[node name="Collision" type="StaticBody3D" parent="."]
+
+[node name="WallSolid" type="CollisionShape3D" parent="Collision"]
+position = Vector3(0, 0.775, 0)
+shape = SubResource("Box0")

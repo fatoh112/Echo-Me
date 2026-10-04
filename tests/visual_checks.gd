@@ -33,7 +33,9 @@ func run(game: Node3D, check: Callable) -> void:
 			var material := node.get_surface_override_material(index) as StandardMaterial3D
 			check.call(material != null, "Visual: material override is valid")
 			check.call(material.albedo_texture != null and material.albedo_texture.get_width() <= 1024, "Visual: player texture import capped to 1K")
-	check.call(game.neighborhood.visual_batch_count <= 40 and game.neighborhood.visual_instance_count > 1000, "Visual: dense geometry uses bounded MultiMesh batches")
+	# The old 1,000 tiny paving-box count described the retired blockout.
+	# Preserve its density/batching intent using imported mesh complexity instead.
+	check.call(game.neighborhood.visual_batch_count <= 40 and game.neighborhood.assets.vertex_count > 100000 and game.neighborhood.assets.instance_count > 200, "Visual: detailed imported town uses bounded MultiMesh batches")
 	var roof_arrays: Array = game.neighborhood.builder._mesh("roof").surface_get_arrays(0)
 	var roof_vertices: PackedVector3Array = roof_arrays[Mesh.ARRAY_VERTEX]
 	var roof_normals: PackedVector3Array = roof_arrays[Mesh.ARRAY_NORMAL]

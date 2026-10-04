@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/environment/slavic_town/glb/glTF/EA03_Prop_Town_Bench_01a.glb" id="1"]
+
+[sub_resource type="BoxShape3D" id="Box0"]
+size = Vector3(1.77, 0.56, 0.65)
+
+[node name="Bench" type="Node3D"]
+
+[node name="Seat" parent="." instance=ExtResource("1")]
+position = Vector3(0, 0, 0)
+rotation = Vector3(0, 1.5707963267948966, 0)
+scale = Vector3(1.3, 1.3, 1.3)
+
+[node name="Collision" type="StaticBody3D" parent="."]
+
+[node name="SeatSolid" type="CollisionShape3D" parent="Collision"]
+position = Vector3(0, 0.28, 0)
+shape = SubResource("Box0")

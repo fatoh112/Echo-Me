@@ -23,10 +23,10 @@
     "npc_offsets": {
       "alex": [-4, 0, -2],
       "sarah": [-3, 0, 0],
-      "mike": [3, 0, 0],
+      "mike": [2.7, 0, -3],
       "emma": [4, 0, 2],
       "david": [0, 0, -2],
-      "noah": [3, 0, 2]
+      "noah": [5.2, 0, 0]
     },
     "opportunities": {
       "DEFEND": 0.9,
@@ -74,6 +74,14 @@
       0,
       9
     ],
+    "npc_offsets": {
+      "alex": [-1.5, 0, -1],
+      "sarah": [0, 0, 2.8],
+      "mike": [5.5, 0, 2],
+      "emma": [3, 0, 4],
+      "david": [1, 0, -1.8],
+      "noah": [7.4, 0, 0.8]
+    },
     "opportunities": {
       "BETRAY": 0.8,
       "HELP": 0.8,

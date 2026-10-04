@@ -1,0 +1,54 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/environment/slavic_town/glb/glTF/EA03_Village_Hut_Wall_Front_04e.glb" id="1"]
+[ext_resource type="PackedScene" path="res://assets/environment/slavic_town/glb/glTF/EA03_Village_Hut_Wall_Front_04b.glb" id="2"]
+[ext_resource type="PackedScene" path="res://assets/environment/slavic_town/glb/glTF/EA03_Village_Hut_Wall_Painted_Side_02c.glb" id="3"]
+[ext_resource type="PackedScene" path="res://assets/environment/slavic_town/glb/glTF/EA03_Prop_House_Door_01b.glb" id="4"]
+[ext_resource type="PackedScene" path="res://assets/environment/slavic_town/glb/glTF/EA03_Prop_House_Shutter_01e.glb" id="5"]
+[ext_resource type="PackedScene" path="res://assets/environment/slavic_town/glb/glTF/EA03_Village_Hut_Roof_Cut_01c.glb" id="6"]
+
+[sub_resource type="BoxShape3D" id="Box0"]
+size = Vector3(7.779999999999999, 2.9846, 8.8)
+
+[node name="house_cottage" type="Node3D"]
+
+[node name="Front" parent="." instance=ExtResource("1")]
+position = Vector3(0, 0, 4.4)
+rotation = Vector3(0, -1.5707963267948966, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="Back" parent="." instance=ExtResource("2")]
+position = Vector3(0, 0, -4.4)
+rotation = Vector3(0, 1.5707963267948966, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="SideLeft" parent="." instance=ExtResource("3")]
+position = Vector3(-3.965, 0, 0)
+rotation = Vector3(0, -1.5707963267948966, 0)
+scale = Vector3(0.43945946485822446, 1, 1)
+
+[node name="SideRight" parent="." instance=ExtResource("3")]
+position = Vector3(3.965, 0, 0)
+rotation = Vector3(0, -1.5707963267948966, 0)
+scale = Vector3(0.43945946485822446, 1, 1)
+
+[node name="Door" parent="." instance=ExtResource("4")]
+position = Vector3(2.9, 0, 4.5)
+rotation = Vector3(0, -1.5707963267948966, 0)
+scale = Vector3(0.85, 0.9, 0.85)
+
+[node name="Window" parent="." instance=ExtResource("5")]
+position = Vector3(-2.6, 1.8, 4.5600000000000005)
+rotation = Vector3(0, -1.5707963267948966, 0)
+scale = Vector3(1, 1, 0.84)
+
+[node name="Roof" parent="." instance=ExtResource("6")]
+position = Vector3(0, 2.1346, 0)
+rotation = Vector3(0, -1.5707963267948966, 0)
+scale = Vector3(0.9485866059571239, 0.64, 0.7944048561625757)
+
+[node name="Collision" type="StaticBody3D" parent="."]
+
+[node name="Footprint" type="CollisionShape3D" parent="Collision"]
+position = Vector3(0, 1.4923, 0)
+shape = SubResource("Box0")

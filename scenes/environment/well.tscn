@@ -1,0 +1,57 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/environment/slavic_town/glb/glTF/EA03_Prop_Village_Whell_01d.glb" id="1"]
+
+[sub_resource type="BoxShape3D" id="Box0"]
+size = Vector3(2.1, 0.8, 1.85)
+
+[sub_resource type="BoxShape3D" id="Roof"]
+size = Vector3(4.15, 1.15, 3.5)
+
+[sub_resource type="CylinderShape3D" id="Cylinder0"]
+radius = 0.12
+height = 3
+
+[sub_resource type="CylinderShape3D" id="Cylinder1"]
+radius = 0.12
+height = 3
+
+[sub_resource type="CylinderShape3D" id="Cylinder2"]
+radius = 0.12
+height = 3
+
+[sub_resource type="CylinderShape3D" id="Cylinder3"]
+radius = 0.12
+height = 3
+
+[node name="CoveredWell" type="Node3D"]
+
+[node name="Well" parent="." instance=ExtResource("1")]
+position = Vector3(0.235, 0, -0.032)
+scale = Vector3(0.75, 0.75, 0.75)
+
+[node name="Collision" type="StaticBody3D" parent="."]
+
+[node name="WellBase" type="CollisionShape3D" parent="Collision"]
+position = Vector3(0.13, 0.4, -0.05)
+shape = SubResource("Box0")
+
+[node name="Roof" type="CollisionShape3D" parent="Collision"]
+position = Vector3(0, 3.1, 0)
+shape = SubResource("Roof")
+
+[node name="NWPost" type="CollisionShape3D" parent="Collision"]
+position = Vector3(-1.65, 1.5, -0.876)
+shape = SubResource("Cylinder0")
+
+[node name="NEPost" type="CollisionShape3D" parent="Collision"]
+position = Vector3(1.716, 1.5, -0.876)
+shape = SubResource("Cylinder1")
+
+[node name="SWPost" type="CollisionShape3D" parent="Collision"]
+position = Vector3(-1.674, 1.5, 0.992)
+shape = SubResource("Cylinder2")
+
+[node name="SEPost" type="CollisionShape3D" parent="Collision"]
+position = Vector3(1.638, 1.5, 0.992)
+shape = SubResource("Cylinder3")

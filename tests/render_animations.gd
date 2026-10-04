@@ -73,7 +73,7 @@ func _movement(label: String, action: String, running: bool, frames: int) -> voi
 func _frames(count: int) -> void:
 	for _index in range(count):
 		await physics_frame
-		camera.global_position = game.player.global_position + Vector3(-2.4, 1.7, -3.6)
+		camera.global_position = game.player.global_position + Vector3(0, 1.7, -3.6)
 		camera.look_at(game.player.global_position + Vector3(0, 0.95, 0))
 	await process_frame
 

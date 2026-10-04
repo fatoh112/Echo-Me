@@ -11,11 +11,26 @@ func _run() -> void:
 	await process_frame
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	await _capture("player_street")
+	await _view("main_street", Vector3(4, 0, 7), 0.15)
 	await _view("town_square", Vector3(4.5, 0, 5.5), 0.38)
 	await _view("merchant", Vector3(-11, 0, -3.5), 0)
 	await _view("tavern", Vector3(11, 0, -3.5), 0)
+	await _view("residential_row", Vector3(12, 0, 12), PI)
+	await _view("back_alley", Vector3(0, 0, -16), 0)
+	await _view("watch_post", Vector3(-7.3, 0, 8), PI / 2)
+	# A second angle includes the tall roof and stairs in one landmark view.
+	var watch_camera := Camera3D.new()
+	watch_camera.fov = 70
+	game.add_child(watch_camera)
+	watch_camera.position = Vector3(-2, 4.6, 13)
+	watch_camera.look_at(Vector3(-16.2, 5.0, 8))
+	watch_camera.current = true
+	await _capture("watch_post")
+	watch_camera.free()
+	(game.player.get_node("CameraPivot/Camera3D") as Camera3D).current = true
+	await _view("home_exterior", Vector3(0, 0, 13), PI)
 	var sarah: NPCData = game.world.npcs["sarah"]
-	await _view("player_near_npc", game.world.npc_position(sarah) + Vector3(0, 0, 2.6), 0)
+	await _view("player_near_npc", game.world.npc_position(sarah) + Vector3(-0.9, 0, 2.6), -0.3)
 	game.interaction_ui.open_for_npc(sarah)
 	await _capture("interaction")
 	game.interaction_ui.close_all()

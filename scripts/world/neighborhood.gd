@@ -1,214 +1,205 @@
 extends Node3D
 class_name Neighborhood
 
+const PACK := "res://assets/environment/slavic_town/glb/glTF/"
+const PREFABS := "res://scenes/environment/"
 var builder: TownGeometry
+var assets: AssetTownBuilder
 var locations_root: Node3D
 var visual_instance_count := 0
 var visual_batch_count := 0
 
 func build(locations: Dictionary) -> void:
 	_build_lighting()
+	# Tiny bespoke signs/lanterns share the NPC palette. All major town visuals
+	# are imported pack meshes. No old blockout building or paving is generated.
 	builder = TownGeometry.new(self)
+	assets = AssetTownBuilder.new(self)
 	locations_root = Node3D.new()
 	locations_root.name = "Locations"
 	add_child(locations_root)
 	_ground()
-	_building(Vector3(-11, 0, -13), Vector3(8, 4.6, 6), 0, "plaster", "roof")
-	_building(Vector3(11, 0, -13), Vector3(9, 5.4, 7), 0, "plaster_rose", "roof")
-	_building(Vector3(0, 0, 20), Vector3(8, 4.4, 7), PI, "plaster", "roof_slate")
-	_building(Vector3(12, 0, 18), Vector3(8, 5, 7), PI, "plaster", "roof")
-	_building(Vector3(21, 0, 18), Vector3(7, 4.2, 6), PI, "plaster_rose", "roof_slate")
-	_building(Vector3(-12, 0, 20), Vector3(7, 5.3, 7), PI, "plaster_rose", "roof")
-	_building(Vector3(-16, 0, 8), Vector3(6, 4.7, 6), PI / 2, "stone", "roof_slate")
-	_building(Vector3(-19, 0, 3), Vector3(4, 7.2, 4), 0, "stone", "roof_slate")
-	_building(Vector3(-6.5, 0, -22), Vector3(7, 5.8, 9), 0, "plaster", "roof_slate")
-	_building(Vector3(6.5, 0, -22), Vector3(7, 4.5, 9), 0, "plaster_rose", "roof")
-	for z in [-10.0, 2.0]:
-		_building(Vector3(-24, 0, z), Vector3(7, 4.8, 7), PI / 2, "plaster", "roof")
-		_building(Vector3(24, 0, z), Vector3(7, 5.2, 7), -PI / 2, "plaster", "roof_slate")
-	_market()
-	_tavern()
+	_architecture()
 	_square()
+	_merchant()
+	_tavern()
+	_residential()
+	_alley()
 	_watch()
-	_props()
-	for x in [-30.0, 30.0]:
-		builder.box(Vector3(x, 1.2, 0), Vector3(0.8, 2.4, 60), "stone", true)
-	for z in [-30.0, 30.0]:
-		builder.box(Vector3(0, 1.2, z), Vector3(60, 2.4, 0.8), "stone", true)
+	_boundary()
 	for location_id: String in locations:
 		var coordinates: Array = locations[location_id]["position"]
 		var anchor := Marker3D.new()
 		anchor.name = location_id
 		anchor.position = Vector3(float(coordinates[0]), 0, float(coordinates[2]))
 		locations_root.add_child(anchor)
-	_sign("Your Quarters", Vector3(1.6, 3.05, 16.30), PI, 2.2)
-	_sign("Town Square", Vector3(-4.2, 2.1, 3.6), 0, 2.2)
-	_sign("Alex's Goods", Vector3(-11, 3.0, -9.85), 0, 2.8)
-	_sign("The Amber Hearth", Vector3(11, 3.2, -9.35), 0, 3.2)
-	_sign("Residential Row", Vector3(12, 2.9, 14.35), PI, 2.8)
-	_sign("Back Alley", Vector3(0, 2.6, -16.3), 0, 2.0)
-	_sign("Town Watch", Vector3(-12.75, 3.15, 8), PI / 2, 2.2)
+	_sign("Your Quarters", Vector3(-2.1, 2.66, 16.48), PI, 2.2)
+	_sign("Town Square", Vector3(-4.8, 1.76, 3.6), 0, 2.2)
+	_sign("Alex's Goods", Vector3(-8.2, 2.8, -9.63), 0, 2.4)
+	_sign("The Amber Hearth", Vector3(13.1, 3.65, -9.68), 0, 3.2)
+	_sign("Residential Row", Vector3(13.5, 2.72, 16.42), PI, 2.8)
+	_sign("Back Alley", Vector3(-2.2, 2.65, -13.7), 0, 1.7)
+	_sign("Town Watch", Vector3(-13.49, 2.65, 8), PI / 2, 2.2)
+	assets.flush()
 	builder.flush()
-	visual_instance_count = builder.instance_count
-	visual_batch_count = builder.batch_count
+	visual_instance_count = assets.instance_count + builder.instance_count
+	visual_batch_count = assets.batch_count + builder.batch_count + 1
 
 func _ground() -> void:
-	builder.box(Vector3(0, -0.18, 0), Vector3(60, 0.36, 60), "earth", true)
+	var ground := MeshInstance3D.new()
+	ground.name = "DirtGround"
+	var plane := PlaneMesh.new()
+	plane.size = Vector2(180, 180)
+	ground.mesh = plane
+	ground.material_override = preload("res://assets/environment/slavic_town/materials/town_ground.tres")
+	ground.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(ground)
+	assets.box_collision(Vector3(0, -0.18, 0), Vector3(60, 0.36, 60))
+	# Flatten only the road's vertical relief to about 1 cm. Physics remains
+	# perfectly level; the unmodified controller never has to climb cobbles.
+	for z in [14.8, 12.5, 10.2, 7.9]:
+		for x in [-0.9, 0.0, 0.9]:
+			_road(Vector3(x, 0.003, z), PI / 2)
+	for z in [5.6, 3.3, 1.0, -1.3, -3.6, -5.9]:
+		for x in [3.1, 4.0, 4.9]:
+			_road(Vector3(x, 0.003, z), PI / 2)
+	for z in [-8.5, -10.8, -13.1, -15.4, -17.7, -20.0, -22.3, -24.6, -26.9]:
+		for x in [-0.9, 0.0, 0.9]:
+			_road(Vector3(x, 0.003, z), PI / 2)
+	for z in [-6.1, 8.6]:
+		for x in [-16.1, -13.8, -11.5, -9.2, -6.9, -4.6, -2.3, 0.0, 2.3, 4.6, 6.9, 9.2, 11.5, 13.8, 16.1, 18.4, 20.7]:
+			for offset in [-0.45, 0.45]:
+				_road(Vector3(x, 0.003, z + offset))
 	var random := RandomNumberGenerator.new()
 	random.seed = 401
-	for z in range(-28, 29):
-		for x in range(-28, 29):
-			var paved: bool = abs(x) <= 3 or (abs(x) <= 8 and z >= -10 and z <= 6) or (z >= -8 and z <= -3) or (z >= 6 and z <= 12)
-			if not paved:
-				continue
-			var tint := Color.WHITE * random.randf_range(0.82, 1.12)
-			tint.a = 1
-			builder.box(Vector3(x + (0.24 if z % 2 else -0.24), 0.006, z), Vector3(0.94, 0.012, 0.91), "paving", false, 0, tint)
-	for side in [-1.0, 1.0]:
-		builder.box(Vector3(side * 19, 0.1, 16), Vector3(18, 0.2, 0.3), "stone")
-		builder.box(Vector3(side * 18, 0.1, -9), Vector3(19, 0.2, 0.3), "stone")
+	for row in range(11):
+		for column in range(11):
+			var point := Vector3(-4.8 + column * 0.86, 0.003, -4.0 + row * 0.81)
+			point.x += random.randf_range(-0.05, 0.05)
+			point.z += random.randf_range(-0.05, 0.05)
+			_model("EA03_Environment_Road_Cobble_01b", point, random.randf_range(-0.12, 0.12), Vector3(0.51, 0.025, 0.51), Color(0.63, 0.59, 0.53))
 
-func _building(origin: Vector3, dimensions: Vector3, yaw: float, wall: String, roof_material: String) -> void:
-	var turn := Basis(Vector3.UP, yaw)
-	var width := dimensions.x
-	var height := dimensions.y
-	var depth := dimensions.z
-	builder.box(origin + Vector3(0, height / 2, 0), dimensions, wall, true, yaw)
-	builder.box(origin + Vector3(0, 0.47, 0), Vector3(width + 0.08, 0.94, depth + 0.08), "stone", false, yaw)
-	for x in [-width / 2, 0.0, width / 2]:
-		for z in [-depth / 2 - 0.05, depth / 2 + 0.05]:
-			builder.box(origin + turn * Vector3(x, height / 2, z), Vector3(0.17, height, 0.17), "wood", false, yaw)
-	for level in [1.0, height * 0.54, height]:
-		for z in [-depth / 2 - 0.09, depth / 2 + 0.09]:
-			builder.box(origin + turn * Vector3(0, level, z), Vector3(width + 0.25, 0.17, 0.18), "wood", false, yaw)
-	for x in [-width / 2 - 0.07, width / 2 + 0.07]:
-		builder.box(origin + turn * Vector3(x, height * 0.54, 0), Vector3(0.16, 0.17, depth), "wood", false, yaw)
-	var front := depth / 2 + 0.12
-	builder.box(origin + turn * Vector3(0, 1.23, front), Vector3(1.5, 2.46, 0.08), "window", false, yaw)
-	builder.box(origin + turn * Vector3(0, 1.12, front + 0.06), Vector3(1.15, 2.24, 0.12), "wood_light", false, yaw)
-	for x in [-0.67, 0.67]:
-		builder.box(origin + turn * Vector3(x, 1.2, front + 0.05), Vector3(0.2, 2.4, 0.18), "stone", false, yaw)
-	for index in range(7):
-		var angle := index * PI / 6
-		builder.box(origin + turn * Vector3(cos(angle) * 0.67, 2.38 + sin(angle) * 0.4, front + 0.05), Vector3(0.26, 0.26, 0.2), "stone", false, yaw)
-	for y in [0.65, 1.75]:
-		builder.box(origin + turn * Vector3(0, y, front + 0.14), Vector3(1.08, 0.08, 0.08), "metal", false, yaw)
-	builder.sphere(origin + turn * Vector3(0.4, 1.2, front + 0.20), Vector3.ONE * 0.10, "metal")
-	for x in [-width * 0.30, width * 0.30]:
-		for y in [1.5, height * 0.76]:
-			_window(origin, turn, Vector3(x, y, front), yaw)
-	for step in range(2):
-		builder.box(origin + turn * Vector3(0, 0.05 * (2 - step), front + 0.22 + step * 0.25), Vector3(1.8, 0.1 * (2 - step), 0.45), "stone")
-	var roof_height := minf(2.2, width * 0.29)
-	builder.roof(origin + Vector3(0, height, 0), Vector3(width + 0.65, roof_height, depth + 0.7), roof_material, yaw)
-	for z in [-depth / 2 - 0.38, depth / 2 + 0.38]:
-		for side in [-1.0, 1.0]:
-			builder.beam(origin + turn * Vector3(side * (width / 2 + 0.35), height, z), origin + turn * Vector3(0, height + roof_height, z), 0.14)
-	for index in range(1, 6):
-		var factor := index / 6.0
-		for side in [-1.0, 1.0]:
-			builder.box(origin + turn * Vector3(side * (width / 2 + 0.2) * (1 - factor), height + roof_height * factor + 0.018, 0), Vector3(0.06, 0.04, depth + 0.65), "wood", false, yaw)
-	builder.box(origin + turn * Vector3(width * 0.28, height + roof_height, -depth * 0.20), Vector3(0.65, 1.8, 0.65), "stone", false, yaw)
-	_lantern(origin + turn * Vector3(-1.4, 2.35, front + 0.4))
+func _road(point: Vector3, yaw: float = 0.0) -> void:
+	_model("EA03_Environment_Road_Cobble_01a", point, yaw, Vector3(0.46, 0.025, 0.53), Color(0.63, 0.59, 0.53))
 
-func _window(origin: Vector3, turn: Basis, local: Vector3, yaw: float) -> void:
-	builder.box(origin + turn * local, Vector3(0.83, 1.05, 0.07), "window", false, yaw)
-	for side in [-1.0, 1.0]:
-		builder.box(origin + turn * (local + Vector3(side * 0.53, 0, 0.04)), Vector3(0.22, 1.15, 0.08), "wood_light", false, yaw)
-	builder.box(origin + turn * (local + Vector3(0, 0, 0.08)), Vector3(0.055, 1.03, 0.06), "wood_light", false, yaw)
-	builder.box(origin + turn * (local + Vector3(0, 0, 0.08)), Vector3(0.84, 0.055, 0.06), "wood_light", false, yaw)
-	builder.box(origin + turn * (local + Vector3(0, -0.56, 0.03)), Vector3(1.3, 0.15, 0.28), "stone", false, yaw)
-
-func _market() -> void:
-	_stall(Vector3(-15.8, 0, -5.5), "cloth_green")
-	_stall(Vector3(-7.8, 0, -8.0), "cloth_red")
-	for x in [-15.2, -16.1, -16.8]:
-		builder.sphere(Vector3(x, 1.1, -5.3), Vector3(0.22, 0.20, 0.22), "cloth_red")
-	_crate(Vector3(-13.7, 0, -8.3))
-	_crate(Vector3(-14.1, 0.85, -8.3))
-	_barrel(Vector3(-9, 0, -8.8))
-
-func _stall(origin: Vector3, cloth: String) -> void:
-	builder.box(origin + Vector3(0, 0.8, 0), Vector3(2.5, 0.16, 1.3), "wood_light", true)
-	for x in [-1.15, 1.15]:
-		for z in [-0.6, 0.6]:
-			builder.box(origin + Vector3(x, 1.2, z), Vector3(0.11, 2.4, 0.11), "wood")
-	builder.box(origin + Vector3(0, 2.4, 0), Vector3(2.85, 0.08, 1.8), cloth)
-	for x in [-1.2, -0.6, 0.0, 0.6, 1.2]:
-		builder.box(origin + Vector3(x, 2.23, 0.88), Vector3(0.55, 0.3, 0.05), cloth)
-	builder.box(origin + Vector3(0, 0.45, 0.62), Vector3(2.4, 0.65, 0.10), "wood_light")
-
-func _tavern() -> void:
-	for point: Vector3 in [Vector3(13, 0, -5), Vector3(15.5, 0, -7)]:
-		builder.cylinder(point + Vector3(0, 0.72, 0), 1.3, 0.14, "wood_light", true)
-		builder.cylinder(point + Vector3(0, 0.34, 0), 0.24, 0.68, "wood")
-		for side in [-1.0, 1.0]:
-			builder.cylinder(point + Vector3(side * 1.0, 0.22, 0), 0.48, 0.44, "wood_light", true)
-	_barrel(Vector3(7, 0, -8.4))
-	_barrel(Vector3(7, 0, -7.3))
-	builder.box(Vector3(11, 2.8, -8.4), Vector3(4.2, 0.12, 2.0), "cloth_red")
-	for x in [8.95, 13.05]:
-		builder.box(Vector3(x, 1.4, -7.5), Vector3(0.13, 2.8, 0.13), "wood")
+func _architecture() -> void:
+	_prefab("house_merchant", Vector3(-11, 0, -15))
+	_prefab("house_inn", Vector3(11, 0, -15), 0, Color(1.0, 0.88, 0.76))
+	_prefab("house_cottage", Vector3(0, 0, 21), PI)
+	_prefab("house_cottage", Vector3(12, 0, 21), PI, Color(0.88, 0.97, 0.88))
+	_prefab("house_inn", Vector3(22, 0, 22), PI, Color(0.85, 0.91, 1.0))
+	_prefab("house_merchant", Vector3(-12, 0, 22), PI, Color(0.90, 0.82, 0.70))
+	_prefab("house_cottage", Vector3(-24, 0, -13), PI / 2)
+	_prefab("house_inn", Vector3(24, 0, -9), -PI / 2, Color(0.9, 0.88, 0.82))
+	_prefab("house_cottage", Vector3(-24, 0, -1), PI / 2, Color(0.92, 0.86, 0.8))
+	_prefab("house_cottage", Vector3(24, 0, 3), -PI / 2)
+	# Rear houses frame the alley without taking its four-meter walk corridor.
+	_prefab("house_cottage", Vector3(-7.3, 0, -25), PI / 2, Color(0.72, 0.78, 0.85))
+	_prefab("house_merchant", Vector3(7.5, 0, -25), -PI / 2, Color(0.80, 0.76, 0.67))
+	for point: Vector3 in [Vector3(2.7, 2.3, 16.35), Vector3(13.8, 2.3, 16.35), Vector3(-8.1, 2.3, -9.5), Vector3(13.8, 2.3, -9.45)]:
+		_lantern(point)
 
 func _square() -> void:
-	var center := Vector3(0, 0, 0.5)
-	builder.cylinder(center + Vector3(0, 0.17, 0), 4.0, 0.34, "stone", true)
-	builder.cylinder(center + Vector3(0, 0.37, 0), 3.65, 0.20, "water")
-	for index in range(12):
-		var angle := index * TAU / 12.0
-		builder.box(center + Vector3(sin(angle) * 1.87, 0.46, cos(angle) * 1.87), Vector3(0.95, 0.45, 0.26), "stone", false, angle)
-	builder.cylinder(center + Vector3(0, 0.91, 0), 0.8, 1.7, "stone")
-	builder.cylinder(center + Vector3(0, 1.73, 0), 1.6, 0.24, "stone")
-	builder.cylinder(center + Vector3(0, 1.87, 0), 1.3, 0.06, "water")
-	builder.sphere(center + Vector3(0, 2.16, 0), Vector3(0.45, 0.60, 0.45), "metal")
-	_bench(Vector3(-5.5, 0, 1), PI / 2)
-	_bench(Vector3(5.5, 0, 1), -PI / 2)
-	_bench(Vector3(0, 0, 5), PI)
-	for point: Vector3 in [Vector3(-6.5, 0, 4.5), Vector3(6.5, 0, 4.5)]:
-		builder.cylinder(point + Vector3(0, 0.2, 0), 1.0, 0.4, "stone")
-		builder.cylinder(point + Vector3(0, 1.5, 0), 0.17, 2.6, "wood")
-		builder.sphere(point + Vector3(0, 2.8, 0), Vector3(1.8, 2, 1.8), "foliage")
-	_lantern_post(Vector3(-5.5, 0, -6.0))
-	_lantern_post(Vector3(5.5, 0, -6.0))
+	_prefab("well", Vector3(-0.25, 0, 0.5), 0.10)
+	_prefab("bench", Vector3(-5.4, 0, 1.4), PI / 2)
+	_prefab("bench", Vector3(6.7, 0, 0.3), -PI / 2)
+	_prefab("bench", Vector3(-2.6, 0, 5.2), PI)
+	_lantern_post(Vector3(-4.8, 0, 3.6))
+	_lantern_post(Vector3(6.1, 0, -4.1))
+	_tree(Vector3(-7.0, 0, 3.3), 0.56, "EA03_Nature_Tree_01b")
+	_tree(Vector3(8.5, 0, 3.5), 0.55, "EA03_Nature_Tree_02c")
+	_model("EA03_Nature_Bush_01a", Vector3(-7.5, 0, 4.0), 0.4, Vector3.ONE * 0.24)
+	_model("EA03_Nature_Bush_01a", Vector3(8.9, 0, 4.1), -0.4, Vector3.ONE * 0.26)
+
+func _merchant() -> void:
+	_prefab("market_stall", Vector3(-15.4, 0, -6.7))
+	_prefab("market_stall", Vector3(-17.4, 0, -2.3), 0.13)
+	_prefab("barrel_group", Vector3(-13.3, 0, -9.0), 0.2)
+	_crate(Vector3(-17.8, 0, -7.7))
+	_crate(Vector3(-17.8, 0.64, -7.7), true)
+	_model("EA03_Prop_Container_Bag_02a", Vector3(-14, 0.05, -8.7))
+	_model("EA03_Prop_Vegetable_Basket_02", Vector3(-16.6, 0, -4.9))
+
+func _tavern() -> void:
+	_prefab("barrel_group", Vector3(7.2, 0, -8.8), -0.2)
+	_prefab("barrel_group", Vector3(16.6, 0, -9.1), PI / 2)
+	for point: Vector3 in [Vector3(14, 0, -6.5), Vector3(16.7, 0, -4.5)]:
+		_model("EA03_Prop_Tabble_01a", point, PI / 2)
+		assets.box_collision(point + Vector3(0, 0.42, 0), Vector3(2.68, 0.84, 0.98))
+		_prefab("bench", point + Vector3(0, 0, 1.2))
+		_prefab("bench", point + Vector3(0, 0, -1.2), PI)
+		for offset: Vector3 in [Vector3(-0.4, 0.832, 0.12), Vector3(0.65, 0.832, -0.20)]:
+			_model("EA_Items_House_mug_01a", point + offset)
+	_lantern(Vector3(9.0, 2.7, -9.4))
+	_lantern(Vector3(14, 2.7, -9.4))
+
+func _residential() -> void:
+	_prefab("fence_segment", Vector3(18.0, 0, 15.6), 0.1)
+	_prefab("fence_segment", Vector3(8.2, 0, 18.8), PI / 2)
+	_prefab("bench", Vector3(15.5, 0, 13.8))
+	_prefab("barrel_group", Vector3(19.3, 0, 16.2))
+	_model("EA03_Items_House_Firewood_01a", Vector3(7.7, 0, 17.0))
+	_model("EA03_Items_House_Firewood_01a", Vector3(-5.0, 0, 19.0))
+	_crate(Vector3(-4.9, 0, 16.9))
+	for point: Vector3 in [Vector3(17.3, 0, 15.0), Vector3(-6, 0, 17.4), Vector3(6.8, 0, 18.2)]:
+		_model("EA03_Nature_Bush_01a", point, 0.5, Vector3.ONE * 0.24)
+	_lantern_post(Vector3(6.7, 0, 12.8))
+	_model("EA_Prop_Stand_Sheet_01a", Vector3(19.5, 0, 13.0), 0.12, Vector3.ONE * 0.65)
+	_tree(Vector3(27, 0, 12), 0.64, "EA03_Nature_Tree_02c")
+	_tree(Vector3(-8, 0, 26), 0.60, "EA03_Nature_Tree_01b")
+
+func _alley() -> void:
+	# Imported roofed wall segments, not old collision boxes made visible.
+	for side in [-1.0, 1.0]:
+		for z in [-13.7, -18.7]:
+			_model("EA03_Fence_Wall_01b", Vector3(side * 3.1, -0.0077, z), PI / 2)
+			assets.box_collision(Vector3(side * 3.1, 1.6, z + 2.5), Vector3(1.2, 3.2, 5.0))
+	_prefab("barrel_group", Vector3(-2.0, 0, -23.4), PI / 2)
+	_crate(Vector3(2.15, 0, -18.7))
+	_crate(Vector3(2.15, 0.64, -18.7), true)
+	_model("EA03_Prop_Container_Bag_02a", Vector3(1.9, 0.05, -16.7))
+	_lantern(Vector3(-2.1, 2.4, -14.0))
 
 func _watch() -> void:
-	builder.box(Vector3(-12.5, 0.4, 12), Vector3(4.5, 0.8, 0.25), "wood", true)
-	for x in [-14.5, -12.5, -10.5]:
-		builder.box(Vector3(x, 1.0, 12), Vector3(0.17, 2.0, 0.17), "wood")
-	_sign("Notice Board", Vector3(-12.5, 1.9, 12.1), 0, 2.0)
-	builder.box(Vector3(-12.5, 1.45, 12.19), Vector3(1.1, 0.7, 0.02), "cream")
-	_crate(Vector3(-13.1, 0, 4.3))
-	_barrel(Vector3(-12.6, 0, 5.2))
+	_prefab("watch_tower", Vector3(-16.2, 0, 8))
+	_prefab("fence_segment", Vector3(-14, 0, 13.4))
+	_prefab("fence_segment", Vector3(-20.0, 0, 11), PI / 2)
+	_prefab("barrel_group", Vector3(-10.6, 0, 4.0), PI / 2)
+	_lantern(Vector3(-13.55, 2.35, 8))
+	_tree(Vector3(-23.8, 0, 16), 0.74, "EA03_Nature_Tree_01b")
 
-func _props() -> void:
-	for point: Vector3 in [Vector3(-2.5, 0, -24), Vector3(2.3, 0, -25), Vector3(17, 0, 12), Vector3(-7, 0, 17)]:
-		_barrel(point)
-	for point: Vector3 in [Vector3(2.4, 0, -20), Vector3(2.4, 0, -21), Vector3(-3.8, 0, 15), Vector3(18, 0, 12)]:
-		_crate(point)
-	_lantern_post(Vector3(3.2, 0, 12))
-	_lantern_post(Vector3(-2.4, 0, -17))
-	for point: Vector3 in [Vector3(-8.5, 0, 14), Vector3(16.6, 0, 13.6), Vector3(-20.0, 0, -5)]:
-		builder.cylinder(point + Vector3(0, 0.18, 0), 0.65, 0.36, "roof")
-		builder.sphere(point + Vector3(0, 0.50, 0), Vector3(0.7, 0.5, 0.7), "foliage")
+func _boundary() -> void:
+	for side in [-1.0, 1.0]:
+		for value in [-27.0, -23.3, -19.6, -15.9, -12.2, -8.5, -4.8, -1.1, 2.6, 6.3, 10.0, 13.7, 17.4, 21.1, 24.8, 28.5]:
+			_prefab("fence_segment", Vector3(value, 0, side * 29.3))
+			_prefab("fence_segment", Vector3(side * 29.3, 0, value), PI / 2)
+	for point: Vector3 in [Vector3(-26, 0, -25), Vector3(24, 0, -24), Vector3(-25, 0, 25), Vector3(27, 0, 27), Vector3(15, 0, -28), Vector3(-15, 0, -28)]:
+		_tree(point, 0.76, "EA03_Nature_Tree_01b")
+	# Sparse edge growth, with deterministic fixed variation and no processing.
+	for index in range(16):
+		var x := -25.0 + index * 3.2
+		_model("EA03_Plant_Grass_01c", Vector3(x, 0.01, 28.0), float(index), Vector3.ONE * 0.62)
+	# Authored irregular clusters outside the playable fence, using low-vertex
+	# source trees rather than a row of identical background silhouettes.
+	var background: Array[Vector3] = [Vector3(-35, 0, -37), Vector3(-38, 0, -43), Vector3(-31, 0, -47), Vector3(-16, 0, -38), Vector3(-9, 0, -44), Vector3(-4, 0, -40), Vector3(18, 0, -37), Vector3(22, 0, -44), Vector3(33, 0, -40), Vector3(42, 0, -24), Vector3(39, 0, -18), Vector3(45, 0, -8), Vector3(37, 0, 17), Vector3(43, 0, 22), Vector3(35, 0, 32), Vector3(19, 0, 39), Vector3(11, 0, 35), Vector3(7, 0, 42), Vector3(-15, 0, 37), Vector3(-22, 0, 44), Vector3(-31, 0, 37), Vector3(-39, 0, 23), Vector3(-43, 0, 17), Vector3(-36, 0, -6), Vector3(-42, 0, -13)]
+	var trees := ["EA03_Nature_Tree_06b", "EA03_Nature_Tree_01b", "EA03_Nature_Tree_02c"]
+	for index in range(background.size()):
+		_model(trees[index % 3], background[index], index * 0.3, Vector3.ONE * (0.62 + (index % 4) * 0.1))
 
-func _barrel(origin: Vector3) -> void:
-	builder.cylinder(origin + Vector3(0, 0.52, 0), 0.76, 1.04, "wood_light", true)
-	for y in [0.15, 0.85]:
-		builder.cylinder(origin + Vector3(0, y, 0), 0.80, 0.07, "metal")
+func _prefab(identity: String, position_value: Vector3, yaw: float = 0.0, tint: Color = Color.WHITE) -> void:
+	assets.place(PREFABS + identity + ".tscn", position_value, yaw, Vector3.ONE, tint)
 
-func _crate(origin: Vector3) -> void:
-	builder.box(origin + Vector3(0, 0.4, 0), Vector3(0.8, 0.8, 0.8), "wood_light", true)
-	for side in [-0.42, 0.42]:
-		builder.beam(origin + Vector3(-0.36, 0.06, side), origin + Vector3(0.36, 0.74, side), 0.085)
-		for y in [0.1, 0.7]:
-			builder.box(origin + Vector3(0, y, side), Vector3(0.84, 0.12, 0.08), "wood")
+func _model(identity: String, position_value: Vector3, yaw: float = 0.0, scale_value: Vector3 = Vector3.ONE, tint: Color = Color.WHITE) -> void:
+	assets.place(PACK + identity + ".glb", position_value, yaw, scale_value, tint)
 
-func _bench(origin: Vector3, yaw: float) -> void:
-	var turn := Basis(Vector3.UP, yaw)
-	builder.box(origin + Vector3(0, 0.5, 0), Vector3(2.4, 0.15, 0.6), "wood_light", true, yaw)
-	builder.box(origin + turn * Vector3(0, 0.9, 0.3), Vector3(2.4, 0.5, 0.10), "wood_light", false, yaw)
-	for x in [-0.95, 0.95]:
-		builder.box(origin + turn * Vector3(x, 0.22, 0), Vector3(0.18, 0.44, 0.5), "wood", false, yaw)
+func _crate(position_value: Vector3, second: bool = false) -> void:
+	_model("EA03_Prop_Container_Crate_03a" if second else "EA03_Prop_Container_Crate_01a", position_value)
+	assets.box_collision(position_value + Vector3(0, 0.32, 0), Vector3(0.87, 0.64, 0.81))
+
+func _tree(position_value: Vector3, scale_value: float, model: String) -> void:
+	_model(model, position_value, 0.3, Vector3.ONE * scale_value)
+	# Foliage never blocks the camera/player; only the trunk has collision.
+	assets.box_collision(position_value + Vector3(0, 1.2, 0), Vector3(0.25, 2.4, 0.25))
 
 func _lantern(origin: Vector3) -> void:
 	builder.box(origin, Vector3(0.23, 0.35, 0.23), "glow")

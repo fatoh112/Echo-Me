@@ -1,0 +1,40 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/environment/slavic_town/glb/glTF/EA03_Village_OutBuilding_WoodRoof_01b.glb" id="1"]
+[ext_resource type="PackedScene" path="res://assets/environment/slavic_town/glb/glTF/EA03_Prop_Tabble_01a.glb" id="2"]
+[ext_resource type="PackedScene" path="res://assets/environment/slavic_town/glb/glTF/EA03_Prop_Container_Basket_02.glb" id="3"]
+[ext_resource type="PackedScene" path="res://assets/environment/slavic_town/glb/glTF/EA03_Prop_Vegetable_Basket_02.glb" id="4"]
+[ext_resource type="PackedScene" path="res://assets/environment/slavic_town/glb/glTF/EA03_Items_House_Apple_01a.glb" id="5"]
+[ext_resource type="PackedScene" path="res://assets/environment/slavic_town/glb/glTF/EA03_Prop_Container_Bag_02a.glb" id="6"]
+
+[sub_resource type="BoxShape3D" id="Box0"]
+size = Vector3(2.68, 0.84, 0.98)
+
+[node name="MarketStall" type="Node3D"]
+
+[node name="Canopy" parent="." instance=ExtResource("1")]
+position = Vector3(-0.1, 0, 0.07)
+scale = Vector3(0.72, 0.72, 0.72)
+
+[node name="Counter" parent="." instance=ExtResource("2")]
+position = Vector3(0, 0, -0.2)
+rotation = Vector3(0, 1.5707963267948966, 0)
+
+[node name="Basket" parent="." instance=ExtResource("3")]
+position = Vector3(-0.55, 0.832, -0.2)
+
+[node name="Vegetables" parent="." instance=ExtResource("4")]
+position = Vector3(0.6, 0.832, -0.25)
+scale = Vector3(0.8, 0.8, 0.8)
+
+[node name="Apples" parent="." instance=ExtResource("5")]
+position = Vector3(0.2, 0.92, -0.1)
+
+[node name="Sack" parent="." instance=ExtResource("6")]
+position = Vector3(-1.22, 0.04, 0.45)
+
+[node name="Collision" type="StaticBody3D" parent="."]
+
+[node name="CounterSolid" type="CollisionShape3D" parent="Collision"]
+position = Vector3(0, 0.42, -0.2)
+shape = SubResource("Box0")
