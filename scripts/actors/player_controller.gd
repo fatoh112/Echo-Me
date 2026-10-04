@@ -5,6 +5,7 @@ const MOVE_SPEED := 5.0
 const MOUSE_SENSITIVITY := 0.0025
 const MIN_PITCH := -0.65
 const MAX_PITCH := 0.28
+var controls_enabled := true
 
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var body_visual: Node3D = $Body
@@ -34,7 +35,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _physics_process(delta: float) -> void:
-	var input_vector := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	var input_vector := Input.get_vector("move_left", "move_right", "move_forward", "move_back") if controls_enabled else Vector2.ZERO
 	var camera_yaw := camera_pivot.rotation.y
 	var move_basis := Basis(Vector3.UP, camera_yaw)
 	var move_direction := move_basis * Vector3(input_vector.x, 0.0, input_vector.y)

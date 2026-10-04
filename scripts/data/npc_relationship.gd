@@ -2,31 +2,24 @@ extends RefCounted
 class_name NPCRelationship
 
 const VALUE_NAMES: Array[String] = ["trust", "fear", "respect", "affection"]
-const DEFAULT_VALUE := 0.5
-
-var values: Dictionary = {}
+var values: Dictionary = {"trust": 0.5, "fear": 0.15, "respect": 0.5, "affection": 0.5}
 
 
-func _init() -> void:
-	for value_name: String in VALUE_NAMES:
-		values[value_name] = DEFAULT_VALUE
-
-
-func apply_action(action: WorldAction) -> void:
-	for value_name: String in action.relationship_delta:
-		if values.has(value_name):
-			values[value_name] = clampf(float(values[value_name]) + float(action.relationship_delta[value_name]), 0.0, 1.0)
+func apply_effects(effects: Dictionary) -> Dictionary:
+	var applied: Dictionary = {}
+	for value_name in VALUE_NAMES:
+		var before := float(values[value_name])
+		values[value_name] = clampf(before + DataUtils.number(effects.get(value_name, 0.0), 0.0), 0.0, 1.0)
+		applied[value_name] = float(values[value_name]) - before
+	return applied
 
 
 func to_dict() -> Dictionary:
-	var result: Dictionary = {}
-	for value_name: String in VALUE_NAMES:
-		result[value_name] = clampf(float(values.get(value_name, DEFAULT_VALUE)), 0.0, 1.0)
-	return result
+	return values.duplicate(true)
 
 
 static func from_dict(data: Dictionary) -> NPCRelationship:
 	var relationship := NPCRelationship.new()
-	for value_name: String in VALUE_NAMES:
-		relationship.values[value_name] = clampf(float(data.get(value_name, DEFAULT_VALUE)), 0.0, 1.0)
+	for value_name in VALUE_NAMES:
+		relationship.values[value_name] = DataUtils.unit(data.get(value_name, relationship.values[value_name]))
 	return relationship

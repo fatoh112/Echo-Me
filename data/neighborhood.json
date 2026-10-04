@@ -1,0 +1,96 @@
+{
+  "player_area": {
+    "display_name": "Player area / spawn",
+    "position": [
+      0,
+      0,
+      8
+    ],
+    "opportunities": {
+      "BEFRIEND": 0.5,
+      "IGNORE": 0.5
+    }
+  },
+  "street": {
+    "display_name": "Street",
+    "position": [
+      0,
+      0,
+      -4
+    ],
+    "opportunities": {
+      "DEFEND": 0.9,
+      "THREATEN": 0.65,
+      "INSULT": 0.6
+    }
+  },
+  "shop": {
+    "display_name": "Alex's Shop",
+    "position": [
+      -10,
+      0,
+      -6
+    ],
+    "opportunities": {
+      "STEAL": 1,
+      "GIVE": 0.85,
+      "HELP": 0.7,
+      "LIE": 0.75
+    }
+  },
+  "cafe": {
+    "display_name": "Cafe",
+    "position": [
+      10,
+      0,
+      -6
+    ],
+    "opportunities": {
+      "BEFRIEND": 0.9,
+      "GIVE": 0.8,
+      "HELP": 0.75,
+      "INSULT": 0.65
+    }
+  },
+  "park": {
+    "display_name": "Small Park",
+    "position": [
+      -10,
+      0,
+      9
+    ],
+    "opportunities": {
+      "BEFRIEND": 1,
+      "HELP": 0.85,
+      "DEFEND": 0.8
+    }
+  },
+  "residential": {
+    "display_name": "Apartments / Residential",
+    "position": [
+      10,
+      0,
+      10
+    ],
+    "opportunities": {
+      "BETRAY": 0.8,
+      "HELP": 0.8,
+      "LIE": 0.7,
+      "IGNORE": 0.65
+    }
+  },
+  "alley": {
+    "display_name": "Alley",
+    "position": [
+      0,
+      0,
+      -18
+    ],
+    "opportunities": {
+      "THREATEN": 1,
+      "STEAL": 0.9,
+      "BETRAY": 0.9,
+      "INSULT": 0.85
+    }
+  }
+}

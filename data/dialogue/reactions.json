@@ -1,0 +1,58 @@
+{
+  "rules": [
+    {
+      "collision": "STRONG",
+      "text": "I don't understand you anymore. You helped me, and then you hurt me."
+    },
+    {
+      "mood": "AFRAID",
+      "text": "Please... just leave me alone."
+    },
+    {
+      "action": "STEAL",
+      "max_trust": 0.4,
+      "text": "I knew I couldn't trust you."
+    },
+    {
+      "action": "APOLOGIZE",
+      "min_forgiveness": 0.6,
+      "text": "I want to believe you. Give me some time."
+    },
+    {
+      "action": "DENY",
+      "max_trust": 0.4,
+      "text": "You say that, but I remember what happened."
+    }
+  ],
+  "actions": {
+    "HELP": "Thanks. I won't forget that.",
+    "GIVE": "That's kind of you.",
+    "INSULT": "Was that really necessary?",
+    "STEAL": "You took that from me!",
+    "THREATEN": "Don't threaten me.",
+    "LIE": "Something about your story doesn't add up.",
+    "DEFEND": "Thanks for standing up for me.",
+    "BEFRIEND": "It's good to have someone to talk to.",
+    "BETRAY": "I trusted you. That makes this worse.",
+    "IGNORE": "All right. I'll leave you to it.",
+    "DENY": "I know what I remember.",
+    "APOLOGIZE": "Thank you for saying that.",
+    "DISMISS": "So my feelings don't matter to you?"
+  },
+  "accusations": {
+    "STEAL": "You stole from me. How do you explain that?",
+    "THREATEN": "You threatened me. Why are you back?",
+    "BETRAY": "You've got some nerve coming back after betraying me.",
+    "INSULT": "You insulted me. What was that about?",
+    "LIE": "You lied to me. I want an explanation."
+  },
+  "greetings": {
+    "CONFUSED": "Some days you help me, other days you hurt me. I don't understand you.",
+    "FRIENDLY": "It's good to see you.",
+    "SUSPICIOUS": "What do you want this time?",
+    "ANGRY": "I'm still upset with you.",
+    "AFRAID": "Please keep your distance.",
+    "HAPPY": "Hey! Good to see you.",
+    "NEUTRAL": "Hello."
+  }
+}

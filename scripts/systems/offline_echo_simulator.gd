@@ -1,44 +1,52 @@
 extends RefCounted
 class_name OfflineEchoSimulator
 
-const MAX_ACTIONS_PER_OFFLINE_PERIOD := 8
+var utility := UtilityAI.new()
 
 
-func simulate_elapsed(
-	elapsed_seconds: float,
-	player_profile: PlayerBehaviorProfile,
-	relationship: NPCRelationship
-) -> Array[WorldAction]:
-	var simulated_count := mini(
-		MAX_ACTIONS_PER_OFFLINE_PERIOD,
-		maxi(1, floori(elapsed_seconds / 60.0))
-	)
+static func turn_count(elapsed_seconds: float) -> int:
+	if elapsed_seconds < 60.0:
+		return 0
+	if elapsed_seconds < 300.0:
+		return 1
+	if elapsed_seconds < 900.0:
+		return 2
+	if elapsed_seconds < 3600.0:
+		return 3
+	if elapsed_seconds < 7200.0:
+		return 4
+	if elapsed_seconds < 10800.0:
+		return 5
+	if elapsed_seconds < 14400.0:
+		return 6
+	return 8
+
+
+func simulate_elapsed(elapsed_seconds: float, world: WorldState, logout_timestamp: float) -> Array[WorldAction]:
 	var actions: Array[WorldAction] = []
-	for _index: int in range(simulated_count):
-		var echo_profile := EchoBehaviorProfile.from_player(player_profile)
-		var action_type := _choose_action(echo_profile, relationship)
-		var action := WorldAction.create(action_type, "ECHO", "PLAYER", AlexController.NPC_ID)
-		if action == null:
+	var count := turn_count(elapsed_seconds)
+	if count == 0:
+		return actions
+	world.last_offline_events.clear()
+	world.last_decisions.clear()
+	world.refresh_echo()
+	for index in range(count):
+		world.game_minutes += 30.0
+		world.update_schedules()
+		world.echo_turn_index += 1
+		# Canonical times depend on saved state + bucket, never the precise launch second.
+		var at_time := logout_timestamp + (index + 1) * 60.0
+		var decision := utility.decide(world, world.echo_turn_index, at_time)
+		var target_id := str(decision["target_id"])
+		if not world.npcs.has(target_id):
 			continue
-		relationship.apply_action(action)
-		actions.append(action)
+		var npc: NPCData = world.npcs[target_id]
+		var event_id := "echo-%d-%d-%d" % [world.echo_seed, int(logout_timestamp), world.echo_turn_index]
+		var action := WorldAction.create(str(decision["action_type"]), npc.id, str(npc.current_state["location_id"]), "ECHO", at_time, event_id)
+		action.metadata["utility_score"] = decision["selected_score"]
+		if ActionSystem.apply(world, action):
+			actions.append(action)
+			world.last_offline_events.append(action)
+			world.last_decisions.append(decision)
+			world.echo_location_id = action.location_id
 	return actions
-
-
-func _choose_action(echo_profile: EchoBehaviorProfile, relationship: NPCRelationship) -> String:
-	var traits: Dictionary = echo_profile.traits
-	var trust: float = float(relationship.values.get("trust", 0.5))
-	var scores: Dictionary = {
-		"help": float(traits["empathy"]) * 0.45 + float(traits["generosity"]) * 0.35 + float(traits["loyalty"]) * 0.20,
-		"give": float(traits["generosity"]) * 0.55 + float(traits["empathy"]) * 0.25 + float(traits["loyalty"]) * 0.20,
-		"insult": float(traits["aggression"]) * 0.45 + (1.0 - float(traits["empathy"])) * 0.30 + float(traits["risk_taking"]) * 0.15 + (1.0 - trust) * 0.10,
-		"steal": float(traits["risk_taking"]) * 0.40 + (1.0 - float(traits["honesty"])) * 0.35 + float(traits["aggression"]) * 0.15 + (1.0 - trust) * 0.10,
-	}
-	var best_action := "help"
-	var best_score := -INF
-	for action_type: String in ["help", "give", "insult", "steal"]:
-		var score := float(scores[action_type])
-		if score > best_score:
-			best_score = score
-			best_action = action_type
-	return best_action

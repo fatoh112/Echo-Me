@@ -1,9 +1,4 @@
-extends Node3D
+extends NPCController
 class_name AlexController
 
-const NPC_ID := "alex"
-const DISPLAY_NAME := "Alex"
-
-
-func get_display_name() -> String:
-	return DISPLAY_NAME
+# Legacy scene compatibility; all behavior now lives in NPCController/NPCData.

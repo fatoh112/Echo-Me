@@ -1,0 +1,337 @@
+[
+  {
+    "id": "alex",
+    "display_name": "Alex",
+    "role": "Shopkeeper",
+    "home_location_id": "residential",
+    "initial_location_id": "shop",
+    "personality": {
+      "aggression": 0.18,
+      "empathy": 0.55,
+      "honesty": 0.65,
+      "greed": 0.58,
+      "courage": 0.4,
+      "sociability": 0.5,
+      "forgiveness": 0.65
+    },
+    "color": [
+      0.72,
+      0.53,
+      0.29
+    ],
+    "relationship_importance": 0.7,
+    "slot_offset": [
+      -1.5,
+      0,
+      0
+    ],
+    "relationship_to_player": {
+      "trust": 0.5,
+      "fear": 0.15,
+      "respect": 0.5,
+      "affection": 0.5
+    },
+    "needs": {
+      "social": 0.5,
+      "security": 0.5,
+      "resources": 0.5
+    },
+    "schedule": [
+      {
+        "start_minute": 0,
+        "location_id": "residential",
+        "activity": "resting"
+      },
+      {
+        "start_minute": 480,
+        "location_id": "shop",
+        "activity": "working"
+      },
+      {
+        "start_minute": 1080,
+        "location_id": "residential",
+        "activity": "resting"
+      }
+    ]
+  },
+  {
+    "id": "sarah",
+    "display_name": "Sarah",
+    "role": "Close friend",
+    "home_location_id": "residential",
+    "initial_location_id": "park",
+    "personality": {
+      "aggression": 0.12,
+      "empathy": 0.88,
+      "honesty": 0.8,
+      "greed": 0.18,
+      "courage": 0.45,
+      "sociability": 0.9,
+      "forgiveness": 0.82
+    },
+    "color": [
+      0.68,
+      0.45,
+      0.76
+    ],
+    "relationship_importance": 1,
+    "slot_offset": [
+      0,
+      0,
+      0
+    ],
+    "relationship_to_player": {
+      "trust": 0.65,
+      "fear": 0.15,
+      "respect": 0.5,
+      "affection": 0.7
+    },
+    "needs": {
+      "social": 0.5,
+      "security": 0.5,
+      "resources": 0.5
+    },
+    "schedule": [
+      {
+        "start_minute": 0,
+        "location_id": "residential",
+        "activity": "resting"
+      },
+      {
+        "start_minute": 540,
+        "location_id": "park",
+        "activity": "socializing"
+      },
+      {
+        "start_minute": 1080,
+        "location_id": "residential",
+        "activity": "relaxing"
+      }
+    ]
+  },
+  {
+    "id": "mike",
+    "display_name": "Mike",
+    "role": "Neighbor",
+    "home_location_id": "residential",
+    "initial_location_id": "residential",
+    "personality": {
+      "aggression": 0.35,
+      "empathy": 0.45,
+      "honesty": 0.5,
+      "greed": 0.45,
+      "courage": 0.48,
+      "sociability": 0.62,
+      "forgiveness": 0.45
+    },
+    "color": [
+      0.3,
+      0.65,
+      0.52
+    ],
+    "relationship_importance": 0.55,
+    "slot_offset": [
+      1.5,
+      0,
+      0
+    ],
+    "relationship_to_player": {
+      "trust": 0.5,
+      "fear": 0.15,
+      "respect": 0.5,
+      "affection": 0.5
+    },
+    "needs": {
+      "social": 0.5,
+      "security": 0.5,
+      "resources": 0.5
+    },
+    "schedule": [
+      {
+        "start_minute": 0,
+        "location_id": "residential",
+        "activity": "resting"
+      },
+      {
+        "start_minute": 660,
+        "location_id": "street",
+        "activity": "watching the neighborhood"
+      },
+      {
+        "start_minute": 1020,
+        "location_id": "residential",
+        "activity": "relaxing"
+      }
+    ]
+  },
+  {
+    "id": "emma",
+    "display_name": "Emma",
+    "role": "Cafe worker",
+    "home_location_id": "residential",
+    "initial_location_id": "cafe",
+    "personality": {
+      "aggression": 0.15,
+      "empathy": 0.7,
+      "honesty": 0.65,
+      "greed": 0.35,
+      "courage": 0.38,
+      "sociability": 0.82,
+      "forgiveness": 0.65
+    },
+    "color": [
+      0.78,
+      0.4,
+      0.4
+    ],
+    "relationship_importance": 0.6,
+    "slot_offset": [
+      -1.5,
+      0,
+      1.6
+    ],
+    "relationship_to_player": {
+      "trust": 0.5,
+      "fear": 0.15,
+      "respect": 0.5,
+      "affection": 0.5
+    },
+    "needs": {
+      "social": 0.5,
+      "security": 0.5,
+      "resources": 0.5
+    },
+    "schedule": [
+      {
+        "start_minute": 0,
+        "location_id": "residential",
+        "activity": "resting"
+      },
+      {
+        "start_minute": 420,
+        "location_id": "cafe",
+        "activity": "working"
+      },
+      {
+        "start_minute": 1140,
+        "location_id": "residential",
+        "activity": "resting"
+      }
+    ]
+  },
+  {
+    "id": "david",
+    "display_name": "David",
+    "role": "Troublemaker",
+    "home_location_id": "residential",
+    "initial_location_id": "alley",
+    "personality": {
+      "aggression": 0.85,
+      "empathy": 0.22,
+      "honesty": 0.3,
+      "greed": 0.65,
+      "courage": 0.88,
+      "sociability": 0.48,
+      "forgiveness": 0.12
+    },
+    "color": [
+      0.65,
+      0.28,
+      0.25
+    ],
+    "relationship_importance": 0.5,
+    "slot_offset": [
+      0,
+      0,
+      1.6
+    ],
+    "relationship_to_player": {
+      "trust": 0.5,
+      "fear": 0.15,
+      "respect": 0.5,
+      "affection": 0.5
+    },
+    "needs": {
+      "social": 0.5,
+      "security": 0.5,
+      "resources": 0.5
+    },
+    "schedule": [
+      {
+        "start_minute": 0,
+        "location_id": "alley",
+        "activity": "lingering"
+      },
+      {
+        "start_minute": 720,
+        "location_id": "street",
+        "activity": "looking for trouble"
+      },
+      {
+        "start_minute": 1020,
+        "location_id": "alley",
+        "activity": "lingering"
+      }
+    ]
+  },
+  {
+    "id": "noah",
+    "display_name": "Noah",
+    "role": "Neighborhood watch",
+    "home_location_id": "residential",
+    "initial_location_id": "street",
+    "personality": {
+      "aggression": 0.3,
+      "empathy": 0.6,
+      "honesty": 0.9,
+      "greed": 0.15,
+      "courage": 0.85,
+      "sociability": 0.55,
+      "forgiveness": 0.4
+    },
+    "color": [
+      0.32,
+      0.46,
+      0.7
+    ],
+    "relationship_importance": 0.8,
+    "slot_offset": [
+      1.5,
+      0,
+      1.6
+    ],
+    "relationship_to_player": {
+      "trust": 0.5,
+      "fear": 0.15,
+      "respect": 0.5,
+      "affection": 0.5
+    },
+    "needs": {
+      "social": 0.5,
+      "security": 0.5,
+      "resources": 0.5
+    },
+    "schedule": [
+      {
+        "start_minute": 0,
+        "location_id": "residential",
+        "activity": "resting"
+      },
+      {
+        "start_minute": 360,
+        "location_id": "street",
+        "activity": "patrolling"
+      },
+      {
+        "start_minute": 840,
+        "location_id": "park",
+        "activity": "patrolling"
+      },
+      {
+        "start_minute": 1140,
+        "location_id": "residential",
+        "activity": "resting"
+      }
+    ]
+  }
+]

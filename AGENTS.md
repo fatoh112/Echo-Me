@@ -1,9 +1,13 @@
 # Echo Me architecture rules
 
-- Use Godot 4.7.x with GDScript and the Compatibility renderer. Do not add C#.
-- Keep gameplay decisions deterministic and engine-owned. Use structured data and utility-style scores; do not add machine learning or a local LLM.
-- Keep the Day 1 prototype local and offline. Do not add a backend, external SDKs, multiplayer, combat, inventory, or quests.
-- Keep behavior traits as floats clamped to the inclusive range 0.0–1.0. Initialize player traits to 0.5 and derive Echo traits as `1.0 - player_trait`.
-- Represent actions, behavior profiles, relationships, memories, saves, and offline simulation as modular systems under `scripts/`.
-- Persist only local game data under Godot's `user://` path. Never commit runtime saves.
-- Keep the prototype lightweight for older and weaker Windows hardware: simple meshes, minimal lights, no real-time shadows, and no unnecessary per-frame allocations.
+- Godot 4.7.2 Standard, GDScript only, Compatibility renderer, Windows first.
+- "AI should provide the illusion of intelligence. The game engine should do the actual thinking."
+- Decisions use discrete Utility AI, structured memory, relationships, personality, needs, schedules, world state, and event history. NPCs perceive PLAYER actions; actual PLAYER/ECHO source is internal debug data.
+- Player traits are floats in 0.0–1.0, initially 0.5, learned with small exponential influences. Echo is the inverse plus at most 0.035 deterministic distortion from a saved seed.
+- Use one reusable NPCData/NPCController implementation. Keep action and dialogue definitions centralized under data/.
+- main.gd orchestrates. Keep decision, relationship, memory, reputation, persistence, neighborhood, and UI responsibilities in their own small systems.
+- Persist versioned JSON in user://; tolerate Day 1 fields, preserve a backup before migration, and use atomic writes. Never commit runtime saves.
+- Target i7-2600 / GTX 1050 Ti / 16 GB and weaker hardware. Primitive geometry, shared simple materials, no real-time shadows or GI. Slow logical ticks; no continuous NPC movement/AI. Nearby ACTIVE, distant BACKGROUND, irrelevant LOGICAL.
+- Do not add C#, a local/cloud LLM, ML runtime, PyTorch, TensorFlow, Ollama, CUDA dependency, backend, Render, ElevenLabs, voice, heavy SDK, multiplayer, combat, inventory, quests, procedural generation, advanced art/animation, Steam, settings, save slots, or achievements.
+- Validate using the portable Godot console executable under F:/mehmed fethelier sultani/. Keep automated tests isolated from the player's production save.
+- Before major gameplay refactors preserve the working commit. Commit and push only after parser, headless startup, and meaningful simulation tests pass.

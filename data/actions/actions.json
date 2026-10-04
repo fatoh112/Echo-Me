@@ -1,0 +1,373 @@
+{
+  "HELP": {
+    "label": "Help",
+    "behavior_effects": {
+      "empathy": 0.7,
+      "generosity": 0.4,
+      "loyalty": 0.2
+    },
+    "relationship_effects": {
+      "trust": 0.08,
+      "fear": -0.025,
+      "respect": 0.05,
+      "affection": 0.05
+    },
+    "memory_effects": {
+      "emotional_valence": 0.7,
+      "importance": 0.7,
+      "summary": "The player helped me."
+    },
+    "personality_fit": {
+      "empathy": 0.6,
+      "generosity": 0.3,
+      "loyalty": 0.1
+    },
+    "risk": 0.05,
+    "reputation_effects": {
+      "kindness": 0.025,
+      "trustworthiness": 0.015
+    },
+    "response": false
+  },
+  "GIVE": {
+    "label": "Give",
+    "behavior_effects": {
+      "generosity": 1,
+      "empathy": 0.4
+    },
+    "relationship_effects": {
+      "trust": 0.05,
+      "fear": -0.01,
+      "respect": 0.025,
+      "affection": 0.08
+    },
+    "memory_effects": {
+      "emotional_valence": 0.65,
+      "importance": 0.65,
+      "summary": "The player gave me a small gift."
+    },
+    "personality_fit": {
+      "generosity": 0.7,
+      "empathy": 0.2,
+      "sociability": 0.1
+    },
+    "risk": 0.1,
+    "reputation_effects": {
+      "kindness": 0.03,
+      "trustworthiness": 0.01
+    },
+    "response": false
+  },
+  "INSULT": {
+    "label": "Insult",
+    "behavior_effects": {
+      "aggression": 0.8,
+      "empathy": -0.6,
+      "sociability": -0.2
+    },
+    "relationship_effects": {
+      "trust": -0.07,
+      "fear": 0.06,
+      "respect": -0.05,
+      "affection": -0.08
+    },
+    "memory_effects": {
+      "emotional_valence": -0.7,
+      "importance": 0.65,
+      "summary": "The player insulted me."
+    },
+    "personality_fit": {
+      "aggression": 0.7,
+      "empathy": -0.3
+    },
+    "risk": 0.25,
+    "reputation_effects": {
+      "kindness": -0.025,
+      "danger": 0.02
+    },
+    "response": false
+  },
+  "STEAL": {
+    "label": "Steal",
+    "behavior_effects": {
+      "honesty": -1,
+      "risk_taking": 0.7,
+      "empathy": -0.3
+    },
+    "relationship_effects": {
+      "trust": -0.16,
+      "fear": 0.035,
+      "respect": -0.08,
+      "affection": -0.1
+    },
+    "memory_effects": {
+      "emotional_valence": -0.9,
+      "importance": 0.95,
+      "summary": "The player stole from me."
+    },
+    "personality_fit": {
+      "honesty": -0.55,
+      "risk_taking": 0.3,
+      "generosity": -0.15
+    },
+    "risk": 0.75,
+    "reputation_effects": {
+      "trustworthiness": -0.05,
+      "kindness": -0.02,
+      "danger": 0.025
+    },
+    "response": false
+  },
+  "THREATEN": {
+    "label": "Threaten",
+    "behavior_effects": {
+      "aggression": 1,
+      "empathy": -0.7,
+      "risk_taking": 0.6
+    },
+    "relationship_effects": {
+      "trust": -0.12,
+      "fear": 0.18,
+      "respect": -0.055,
+      "affection": -0.12
+    },
+    "memory_effects": {
+      "emotional_valence": -0.9,
+      "importance": 0.95,
+      "summary": "The player threatened me."
+    },
+    "personality_fit": {
+      "aggression": 0.65,
+      "empathy": -0.2,
+      "risk_taking": 0.15
+    },
+    "risk": 0.8,
+    "reputation_effects": {
+      "danger": 0.06,
+      "kindness": -0.03,
+      "trustworthiness": -0.02
+    },
+    "response": false
+  },
+  "LIE": {
+    "label": "Lie",
+    "behavior_effects": {
+      "honesty": -1,
+      "loyalty": -0.2
+    },
+    "relationship_effects": {
+      "trust": -0.08,
+      "respect": -0.04,
+      "affection": -0.035
+    },
+    "memory_effects": {
+      "emotional_valence": -0.55,
+      "importance": 0.7,
+      "summary": "The player lied to me."
+    },
+    "personality_fit": {
+      "honesty": -0.8,
+      "risk_taking": 0.2
+    },
+    "risk": 0.4,
+    "reputation_effects": {
+      "trustworthiness": -0.04
+    },
+    "response": false
+  },
+  "DEFEND": {
+    "label": "Defend",
+    "behavior_effects": {
+      "loyalty": 0.8,
+      "empathy": 0.6,
+      "risk_taking": 0.3
+    },
+    "relationship_effects": {
+      "trust": 0.1,
+      "fear": -0.035,
+      "respect": 0.08,
+      "affection": 0.07
+    },
+    "memory_effects": {
+      "emotional_valence": 0.85,
+      "importance": 0.85,
+      "summary": "The player stood up for me."
+    },
+    "personality_fit": {
+      "loyalty": 0.5,
+      "empathy": 0.3,
+      "risk_taking": 0.2
+    },
+    "risk": 0.45,
+    "reputation_effects": {
+      "kindness": 0.035,
+      "danger": -0.015,
+      "trustworthiness": 0.025
+    },
+    "response": false
+  },
+  "BEFRIEND": {
+    "label": "Befriend",
+    "behavior_effects": {
+      "sociability": 1,
+      "empathy": 0.5,
+      "loyalty": 0.3
+    },
+    "relationship_effects": {
+      "trust": 0.05,
+      "respect": 0.025,
+      "affection": 0.08
+    },
+    "memory_effects": {
+      "emotional_valence": 0.65,
+      "importance": 0.5,
+      "summary": "The player reached out as a friend."
+    },
+    "personality_fit": {
+      "sociability": 0.6,
+      "empathy": 0.3,
+      "loyalty": 0.1
+    },
+    "risk": 0.05,
+    "reputation_effects": {
+      "kindness": 0.02,
+      "trustworthiness": 0.01
+    },
+    "response": false
+  },
+  "BETRAY": {
+    "label": "Betray",
+    "behavior_effects": {
+      "loyalty": -1,
+      "honesty": -0.7,
+      "risk_taking": 0.5,
+      "empathy": -0.4
+    },
+    "relationship_effects": {
+      "trust": -0.26,
+      "fear": 0.055,
+      "respect": -0.16,
+      "affection": -0.26
+    },
+    "memory_effects": {
+      "emotional_valence": -1,
+      "importance": 1,
+      "summary": "The player betrayed my trust."
+    },
+    "personality_fit": {
+      "loyalty": -0.55,
+      "honesty": -0.3,
+      "empathy": -0.15
+    },
+    "risk": 0.65,
+    "reputation_effects": {
+      "trustworthiness": -0.065,
+      "kindness": -0.035,
+      "danger": 0.025
+    },
+    "response": false
+  },
+  "IGNORE": {
+    "label": "Ignore",
+    "behavior_effects": {
+      "sociability": -0.3,
+      "empathy": -0.2
+    },
+    "relationship_effects": {
+      "trust": -0.01,
+      "affection": -0.025
+    },
+    "memory_effects": {
+      "emotional_valence": -0.2,
+      "importance": 0.2,
+      "summary": "The player ignored me."
+    },
+    "personality_fit": {
+      "sociability": -0.7,
+      "empathy": -0.3
+    },
+    "risk": 0,
+    "reputation_effects": {
+      "kindness": -0.005
+    },
+    "response": false
+  },
+  "DENY": {
+    "label": "Deny",
+    "behavior_effects": {
+      "honesty": 0.35,
+      "risk_taking": 0.15
+    },
+    "relationship_effects": {
+      "trust": -0.015,
+      "fear": -0.01
+    },
+    "memory_effects": {
+      "emotional_valence": -0.1,
+      "importance": 0.35,
+      "summary": "The player denied the accusation."
+    },
+    "personality_fit": {
+      "honesty": 0.7,
+      "risk_taking": 0.3
+    },
+    "risk": 0.05,
+    "reputation_effects": {
+      "trustworthiness": 0.005
+    },
+    "response": true
+  },
+  "APOLOGIZE": {
+    "label": "Apologize",
+    "behavior_effects": {
+      "empathy": 0.6,
+      "loyalty": 0.2
+    },
+    "relationship_effects": {
+      "trust": 0.04,
+      "fear": -0.025,
+      "affection": 0.045
+    },
+    "memory_effects": {
+      "emotional_valence": 0.5,
+      "importance": 0.5,
+      "summary": "The player apologized."
+    },
+    "personality_fit": {
+      "empathy": 0.8,
+      "loyalty": 0.2
+    },
+    "risk": 0,
+    "reputation_effects": {
+      "kindness": 0.015,
+      "trustworthiness": 0.01
+    },
+    "response": true
+  },
+  "DISMISS": {
+    "label": "Dismiss",
+    "behavior_effects": {
+      "empathy": -0.5,
+      "sociability": -0.3
+    },
+    "relationship_effects": {
+      "trust": -0.04,
+      "respect": -0.025,
+      "affection": -0.04
+    },
+    "memory_effects": {
+      "emotional_valence": -0.45,
+      "importance": 0.45,
+      "summary": "The player dismissed my concern."
+    },
+    "personality_fit": {
+      "empathy": -0.7,
+      "sociability": -0.3
+    },
+    "risk": 0.1,
+    "reputation_effects": {
+      "kindness": -0.015
+    },
+    "response": true
+  }
+}
