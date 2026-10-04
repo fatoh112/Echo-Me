@@ -1,0 +1,18 @@
+# Godot generated caches (keep .gd.uid and .import metadata tracked)
+.godot/
+/android/
+
+# Temporary files, local logs, and editor caches
+*.tmp
+*.temp
+*.log
+*.bak
+*~
+.vs/
+.idea/
+
+# OS junk
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/

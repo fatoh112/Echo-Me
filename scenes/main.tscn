@@ -1,0 +1,17 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://scenes/npc/alex.tscn" id="3_alex"]
+[ext_resource type="Script" path="res://scripts/systems/save_manager.gd" id="4_save"]
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1_main")
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+
+[node name="Alex" parent="." instance=ExtResource("3_alex")]
+position = Vector3(0, 0, -5)
+
+[node name="SaveManager" type="Node" parent="."]
+script = ExtResource("4_save")
