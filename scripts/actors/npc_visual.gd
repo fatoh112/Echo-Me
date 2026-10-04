@@ -2,8 +2,43 @@ extends Node3D
 class_name NPCVisual
 
 var piece_count := 0
+var animation_player: AnimationPlayer
+var animation_tree: AnimationTree
+var _humanoid: Node3D
+@export var humanoid_scene: PackedScene
+var _animation_active := false
+
+# Optional model presentation hooks. NPCController knows only this interface.
+func replace_model(scene: PackedScene) -> void:
+	for child in get_children():
+		remove_child(child)
+		child.queue_free()
+	_humanoid = scene.instantiate() as Node3D
+	add_child(_humanoid)
+	animation_player = _humanoid.find_child("AnimationPlayer", true, false) as AnimationPlayer
+	animation_tree = _humanoid.find_child("AnimationTree", true, false) as AnimationTree
+	piece_count = 0
+	set_animation_active(_animation_active)
+
+func set_animation_active(active: bool) -> void:
+	_animation_active = active
+	# Only an ACTIVE NPC may evaluate a future humanoid animation system.
+	if _humanoid != null:
+		_humanoid.process_mode = Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
+	if animation_tree != null:
+		animation_tree.active = active
+
+func play_optional_animation(clip: StringName) -> bool:
+	if animation_player == null or not animation_player.has_animation(clip):
+		return false
+	animation_player.play(clip, 0.18)
+	return true
 
 func build(npc_id: String) -> void:
+	if humanoid_scene != null and _humanoid == null:
+		replace_model(humanoid_scene)
+	if _humanoid != null:
+		return
 	var style: Dictionary = WorldVisualConfig.NPC_STYLE.get(npc_id, WorldVisualConfig.NPC_STYLE["mike"])
 	var height := float(style["height"])
 	var width := float(style["width"])

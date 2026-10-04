@@ -1,7 +1,9 @@
 # Echo Me architecture rules
 
 - Official visual direction: stylized semi-realistic low-fantasy old town at sunset; merchant, tavern, houses, square, alley, town watch. No modern urban props.
-- Player physics/controller remain authoritative and unchanged. Imported character models belong under Body/VisualRoot. Animation and camera presentation never own movement or collision.
+- Player CharacterBody3D remains authoritative. Configurable walk/run, grounded jump, and smooth camera-relative facing live in PlayerController. Imported character models belong under Body/VisualRoot. Animation and camera presentation never own movement or collision.
+- Use one player skeleton/mesh and the offline-baked player_locomotion.res AnimationLibrary. FBX inspection/baking lives in tools/, never gameplay. Remove locomotion root translation; jump height comes from physics. Cache animation references, use short transitions, and evaluate the player once per physics tick. Preview-only turns/start-walk must not delay input. TALK is timed, SIT is a preview capability until seating is implemented.
+- NPCVisual exposes optional humanoid/animation hooks; NPCController remains independent of bones and models. Only ACTIVE future NPC models may evaluate animation. Animation FBXs discard embedded textures.
 - Preserve NPC IDs, relationships, and memories when retheming. Canonical town locations must accept legacy save aliases. World geometry is fixed authored procedural blockout, batched where practical.
 - Centralize environment/NPC materials in WorldVisualConfig; no extra shadows/GI or expensive effects. Keep missing animation states inactive until real clips exist.
 
@@ -13,6 +15,6 @@
 - main.gd orchestrates. Keep decision, relationship, memory, reputation, persistence, neighborhood, and UI responsibilities in their own small systems.
 - Persist versioned JSON in user://; tolerate Day 1 fields, preserve a backup before migration, and use atomic writes. Never commit runtime saves.
 - Target i7-2600 / GTX 1050 Ti / 16 GB and weaker hardware. Primitive geometry, shared simple materials, no real-time shadows or GI. Slow logical ticks; no continuous NPC movement/AI. Nearby ACTIVE, distant BACKGROUND, irrelevant LOGICAL.
-- Do not add C#, a local/cloud LLM, ML runtime, PyTorch, TensorFlow, Ollama, CUDA dependency, backend, Render, ElevenLabs, voice, heavy SDK, multiplayer, combat, inventory, quests, procedural generation, advanced art/animation, Steam, settings, save slots, or achievements.
+- Do not add C#, a local/cloud LLM, ML runtime, PyTorch, TensorFlow, Ollama, CUDA dependency, backend, Render, ElevenLabs, voice, heavy SDK, multiplayer, combat, inventory, quests, procedural generation, parkour, stamina, Steam, settings, save slots, or achievements.
 - Validate using the portable Godot console executable under F:/mehmed fethelier sultani/. Keep automated tests isolated from the player's production save.
 - Before major gameplay refactors preserve the working commit. Commit and push only after parser, headless startup, and meaningful simulation tests pass.

@@ -131,7 +131,7 @@ func _build() -> void:
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
 	var hint := Label.new()
-	hint.text = "WASD Move  |  Mouse Look  |  E Interact  |  Esc Cursor  |  F3 Debug  |  F10 Save & Quit"
+	hint.text = "WASD Move  |  Shift Run  |  Space Jump  |  Mouse Look  |  E Interact  |  Esc Cursor  |  F3 Debug  |  F10 Save & Quit"
 	hint.add_theme_font_size_override("font_size", 14)
 	hint.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
 	hint.offset_left = 14

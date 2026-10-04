@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://prm483udsjrw"
-path="res://.godot/imported/Kachujin G Rosales_0.png-e218308bf2e2e180d79fd562abb2adb5.ctex"
+path.s3tc="res://.godot/imported/Kachujin G Rosales_0.png-e218308bf2e2e180d79fd562abb2adb5.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "4f715382363f964655342b12cdff376c"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/characters/player/Kachujin G Rosales_0.png"
-dest_files=["res://.godot/imported/Kachujin G Rosales_0.png-e218308bf2e2e180d79fd562abb2adb5.ctex"]
+dest_files=["res://.godot/imported/Kachujin G Rosales_0.png-e218308bf2e2e180d79fd562abb2adb5.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=1024
-detect_3d/compress_to=1
+detect_3d/compress_to=0

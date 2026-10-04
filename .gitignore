@@ -2,6 +2,11 @@
 .godot/
 /android/
 
+# Unused local source archive and duplicate one-frame character pose.
+/assets/animations/player/Female Locomotion Pack.zip
+/assets/animations/player/Kachujin G Rosales.fbx
+/assets/animations/player/Kachujin G Rosales.fbx.import
+
 # Temporary files, local logs, and editor caches
 *.tmp
 *.temp

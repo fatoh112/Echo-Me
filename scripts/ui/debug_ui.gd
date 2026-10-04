@@ -6,14 +6,19 @@ var text_label: Label
 var npc_picker: OptionButton
 var world: WorldState
 var nearby_id := ""
+var player: PlayerController
+var animation_label: Label
+var _animation_elapsed := 0.0
+var _preview_index := -1
 
 
 func _ready() -> void:
 	_build()
 
 
-func setup(world_state: WorldState) -> void:
+func setup(world_state: WorldState, player_controller: PlayerController = null) -> void:
 	world = world_state
+	player = player_controller
 	npc_picker.add_item("Nearby NPC / Alex if none")
 	npc_picker.set_item_metadata(0, "")
 	var ids: Array = world.npcs.keys()
@@ -27,11 +32,43 @@ func setup(world_state: WorldState) -> void:
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F3:
 		panel.visible = not panel.visible
+		if not panel.visible and player != null:
+			player.visual.clear_preview()
 		refresh()
 		get_viewport().set_input_as_handled()
 
 
+func _process(delta: float) -> void:
+	if not panel.visible or player == null:
+		return
+	_animation_elapsed += delta
+	if _animation_elapsed >= 0.1:
+		_animation_elapsed = 0
+		_refresh_animation()
+
+
+func _refresh_animation() -> void:
+	if player == null:
+		return
+	animation_label.text = "PLAYER ANIMATION: %s\nSPEED: %.2f | ON FLOOR: %s%s" % [player.visual.state_name(), player.horizontal_speed, str(player.is_on_floor()), "\nPreview (4 s); WASD cancels" if player.preview_locked else ""]
+
+
+func _cycle_preview() -> void:
+	if player == null or not panel.visible or not player.controls_enabled:
+		return
+	_preview_index = (_preview_index + 1) % PlayerVisual.PREVIEW_STATES.size()
+	player.visual.preview_animation(PlayerVisual.PREVIEW_STATES[_preview_index])
+	_refresh_animation()
+
+
+func _stop_preview() -> void:
+	if player != null:
+		player.visual.clear_preview()
+		_refresh_animation()
+
+
 func refresh(npc_id: String = "") -> void:
+	_refresh_animation()
 	if world == null:
 		return
 	if not npc_id.is_empty():
@@ -112,6 +149,19 @@ func _build() -> void:
 	title.text = "ECHO ME DEBUG — F3 hide | Esc cursor"
 	title.add_theme_font_size_override("font_size", 14)
 	content.add_child(title)
+	animation_label = Label.new()
+	animation_label.add_theme_font_size_override("font_size", 13)
+	content.add_child(animation_label)
+	var previews := HBoxContainer.new()
+	content.add_child(previews)
+	var cycle := Button.new()
+	cycle.text = "Preview next animation"
+	cycle.pressed.connect(_cycle_preview)
+	previews.add_child(cycle)
+	var stop := Button.new()
+	stop.text = "Stop"
+	stop.pressed.connect(_stop_preview)
+	previews.add_child(stop)
 	npc_picker = OptionButton.new()
 	npc_picker.item_selected.connect(_picked)
 	content.add_child(npc_picker)

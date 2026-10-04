@@ -21,7 +21,7 @@ func run(game: Node3D, check: Callable) -> void:
 	var machine := visual.animation_tree.tree_root as AnimationNodeStateMachine
 	for state in ["IDLE", "WALK", "RUN"]:
 		check.call(machine.has_node(state), "Visual: locomotion state " + state)
-	check.call(PlayerVisual.LocomotionState.size() == 6, "Visual: future INTERACT TALK SIT states reserved")
+	check.call(PlayerVisual.LocomotionState.has("INTERACT") and PlayerVisual.LocomotionState.has("TALK") and PlayerVisual.LocomotionState.has("SIT"), "Visual: INTERACT TALK SIT states retained")
 	check.call(visual.idle_clip in visual.usable_clips, "Visual: supplied matching Idle clip is usable")
 	check.call(visual.animation_player.get_animation(visual.idle_clip).length > 3.0, "Visual: real multi-frame Idle clip")
 	var all_clips := visual.idle_clip in visual.usable_clips and visual.walk_clip in visual.usable_clips and visual.run_clip in visual.usable_clips
@@ -82,10 +82,10 @@ func run(game: Node3D, check: Callable) -> void:
 	Input.action_press("move_forward")
 	for _index in range(5):
 		await game.get_tree().physics_frame
-	Input.action_release("move_forward")
 	await game.get_tree().process_frame
-	check.call(visual.locomotion_state == PlayerVisual.LocomotionState.RUN, "Visual: locomotion observes controller velocity")
+	check.call(visual.locomotion_state == PlayerVisual.LocomotionState.WALK, "Visual: locomotion observes walking controller velocity")
 	check.call(game.player.global_position.z < 7, "Visual: missing animations never block authoritative movement")
+	Input.action_release("move_forward")
 	game.player.velocity = Vector3.ZERO
 	game.player.global_position = original_position
 	arm.rotation = original_pivot

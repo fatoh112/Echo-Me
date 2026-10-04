@@ -41,13 +41,13 @@ func build(locations: Dictionary) -> void:
 		anchor.name = location_id
 		anchor.position = Vector3(float(coordinates[0]), 0, float(coordinates[2]))
 		locations_root.add_child(anchor)
-	_sign("Your Quarters", Vector3(1.6, 2.6, 16.45), PI, 1.6)
+	_sign("Your Quarters", Vector3(1.6, 3.05, 16.30), PI, 2.2)
 	_sign("Town Square", Vector3(-4.2, 2.1, 3.6), 0, 2.2)
 	_sign("Alex's Goods", Vector3(-11, 3.0, -9.85), 0, 2.8)
 	_sign("The Amber Hearth", Vector3(11, 3.2, -9.35), 0, 3.2)
 	_sign("Residential Row", Vector3(12, 2.9, 14.35), PI, 2.8)
 	_sign("Back Alley", Vector3(0, 2.6, -16.3), 0, 2.0)
-	_sign("Town Watch", Vector3(-12.85, 2.8, 8), PI / 2, 2.2)
+	_sign("Town Watch", Vector3(-12.75, 3.15, 8), PI / 2, 2.2)
 	builder.flush()
 	visual_instance_count = builder.instance_count
 	visual_batch_count = builder.batch_count
@@ -227,7 +227,8 @@ func _sign(text: String, position_value: Vector3, yaw: float, width: float) -> v
 	var label := Label3D.new()
 	label.text = text
 	label.font_size = 36
-	label.pixel_size = 0.010
+	var text_width := ThemeDB.fallback_font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, label.font_size).x
+	label.pixel_size = minf(0.010, (width - 0.16) / maxf(text_width, 1.0))
 	label.position = position_value + Basis(Vector3.UP, yaw) * Vector3(0, 0, 0.075)
 	label.rotation.y = yaw
 	label.modulate = WorldVisualConfig.PALETTE["cream"]

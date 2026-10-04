@@ -1,0 +1,135 @@
+{
+	"clips": {
+		"IDLE": {
+			"duration": 8.33333333333333,
+			"gameplay": true,
+			"loop": true,
+			"native_speed_mps": 0.0000131881272592626,
+			"source": "Idle.fbx",
+			"source_clip": "mixamo_com",
+			"source_duration": 8.33333333333333
+		},
+		"JOG": {
+			"duration": 2.56666666666667,
+			"gameplay": false,
+			"loop": true,
+			"native_speed_mps": 1.99642206712047,
+			"source": "Jogging.fbx",
+			"source_clip": "mixamo_com",
+			"source_duration": 2.56666666666667
+		},
+		"JUMP": {
+			"duration": 0.97,
+			"gameplay": true,
+			"loop": false,
+			"native_speed_mps": 0.0068750884587001,
+			"source": "jump.fbx",
+			"source_clip": "mixamo_com",
+			"source_duration": 1.66666666666667
+		},
+		"RUN": {
+			"duration": 0.7,
+			"gameplay": true,
+			"loop": true,
+			"native_speed_mps": 3.80736435155922,
+			"source": "running.fbx",
+			"source_clip": "mixamo_com",
+			"source_duration": 0.7
+		},
+		"SIT": {
+			"duration": 9.56666666666667,
+			"gameplay": false,
+			"loop": true,
+			"native_speed_mps": 0.00000000336429032885384,
+			"source": "Sitting.fbx",
+			"source_clip": "mixamo_com",
+			"source_duration": 9.56666666666667
+		},
+		"START_WALK": {
+			"duration": 1.86666666666667,
+			"gameplay": false,
+			"loop": false,
+			"native_speed_mps": 0.941531063253748,
+			"source": "Female Start Walking.fbx",
+			"source_clip": "mixamo_com",
+			"source_duration": 1.86666666666667
+		},
+		"STRAFE_LEFT": {
+			"duration": 0.933333333333333,
+			"gameplay": true,
+			"loop": true,
+			"native_speed_mps": 1.96858154905711,
+			"source": "left strafe walk.fbx",
+			"source_clip": "mixamo_com",
+			"source_duration": 0.933333333333333
+		},
+		"STRAFE_LEFT_RUN": {
+			"duration": 0.666666666666667,
+			"gameplay": true,
+			"loop": true,
+			"native_speed_mps": 3.65206644296016,
+			"source": "left strafe.fbx",
+			"source_clip": "mixamo_com",
+			"source_duration": 0.666666666666667
+		},
+		"STRAFE_RIGHT": {
+			"duration": 0.933333333333333,
+			"gameplay": true,
+			"loop": true,
+			"native_speed_mps": 1.96735827964516,
+			"source": "right strafe walk.fbx",
+			"source_clip": "mixamo_com",
+			"source_duration": 0.933333333333333
+		},
+		"STRAFE_RIGHT_RUN": {
+			"duration": 0.666666666666667,
+			"gameplay": true,
+			"loop": true,
+			"native_speed_mps": 3.65206581633112,
+			"source": "right strafe.fbx",
+			"source_clip": "mixamo_com",
+			"source_duration": 0.666666666666667
+		},
+		"TALK": {
+			"duration": 5.16666666666667,
+			"gameplay": true,
+			"loop": true,
+			"native_speed_mps": 0.0000000132361598196885,
+			"source": "Talking.fbx",
+			"source_clip": "mixamo_com",
+			"source_duration": 5.16666666666667
+		},
+		"TURN_LEFT": {
+			"duration": 1.16666666666667,
+			"gameplay": false,
+			"loop": false,
+			"native_speed_mps": 0.0163806301067956,
+			"source": "left turn.fbx",
+			"source_clip": "mixamo_com",
+			"source_duration": 1.16666666666667
+		},
+		"TURN_RIGHT": {
+			"duration": 1.16666666666667,
+			"gameplay": false,
+			"loop": false,
+			"native_speed_mps": 0.0163900365360804,
+			"source": "right turn.fbx",
+			"source_clip": "mixamo_com",
+			"source_duration": 1.16666666666667
+		},
+		"WALK": {
+			"duration": 0.966666666666667,
+			"gameplay": true,
+			"loop": true,
+			"native_speed_mps": 1.69295418017749,
+			"source": "walking.fbx",
+			"source_clip": "mixamo_com",
+			"source_duration": 0.966666666666667
+		}
+	},
+	"excluded": {
+		"Kachujin G Rosales.fbx": "one-frame bind pose, not an animation"
+	},
+	"import_fps": 30,
+	"library": "res://assets/animations/player/player_locomotion.res"
+}

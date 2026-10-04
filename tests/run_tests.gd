@@ -247,6 +247,7 @@ func _test_scene() -> void:
 	game.interaction_ui.close_all()
 	_check(game.player.controls_enabled, "Closing summary restores controls")
 	await preload("res://tests/visual_checks.gd").new().run(game, _check)
+	await preload("res://tests/animation_checks.gd").new().run(game, _check)
 	var toggle := InputEventKey.new()
 	toggle.keycode = KEY_F3
 	toggle.pressed = true

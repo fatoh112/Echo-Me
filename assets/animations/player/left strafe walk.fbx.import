@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://pq64wbyd188r"
-path="res://.godot/imported/Female Start Walking.fbx-46685d17f0d9df8267eca4bfd3318ffe.scn"
+uid="uid://d7eovhqod5d6"
+path="res://.godot/imported/left strafe walk.fbx-c9000ecaecedb51da7c54109ffd43812.scn"
 
 [deps]
 
-source_file="res://assets/animations/player/Female Start Walking.fbx"
-dest_files=["res://.godot/imported/Female Start Walking.fbx-46685d17f0d9df8267eca4bfd3318ffe.scn"]
+source_file="res://assets/animations/player/left strafe walk.fbx"
+dest_files=["res://.godot/imported/left strafe walk.fbx-c9000ecaecedb51da7c54109ffd43812.scn"]
 
 [params]
 

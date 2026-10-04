@@ -25,7 +25,7 @@ func _ready() -> void:
 	npc_manager.setup(world, player.global_position)
 	interaction_ui.action_requested.connect(_on_action_requested)
 	interaction_ui.modal_changed.connect(_on_modal_changed)
-	debug_ui.setup(world)
+	debug_ui.setup(world, player)
 	var events: Array[WorldAction] = []
 	if not _validation_mode and save_manager.logout_timestamp > 0.0:
 		var elapsed := maxf(0.0, Time.get_unix_time_from_system() - save_manager.logout_timestamp)
@@ -109,12 +109,16 @@ func _on_action_requested(action_type: String, target_id: String, response_to: S
 			if memory.id == response_to:
 				action.metadata["denial_truthful"] = memory.actual_source == "ECHO"
 	if ActionSystem.apply(world, action):
+		player.visual.play_talk()
 		interaction_ui.show_toast("%s: %s" % [npc.display_name, DialogueResolver.reaction(npc, action)])
 		debug_ui.refresh(npc.id)
 
 
 func _on_modal_changed(open: bool) -> void:
 	player.controls_enabled = not open
+	player.visual.clear_preview()
+	if open and not interaction_ui.menu_target_id.is_empty():
+		player.visual.play_talk()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if open else Input.MOUSE_MODE_CAPTURED
 
 

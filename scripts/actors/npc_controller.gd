@@ -30,6 +30,7 @@ func update_representation(world_position: Vector3, activity_level: String) -> v
 		data.activity_level = level
 	var relevant := level != "LOGICAL"
 	visible = relevant
+	visual_root.set_animation_active(level == "ACTIVE")
 	collider.set_deferred("disabled", not relevant)
 	if relevant:
 		global_position = world_position
