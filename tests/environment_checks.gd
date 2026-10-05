@@ -3,7 +3,7 @@ extends RefCounted
 
 const HERO_DOORWAYS: Array[Vector3] = [
 	Vector3(40.5, 4.9, -57.1), Vector3(36.7, 4.9, -78.5),
-	Vector3(23.3, 1.4, -92.2), Vector3(14.2, 1.4, -80.5),
+	Vector3(23.3, 1.4, -92.2), Vector3(14.2, 1.4, -80.95),
 ]
 
 func run(game: Node3D, check: Callable) -> void:
@@ -12,6 +12,11 @@ func run(game: Node3D, check: Callable) -> void:
 	var source := village.get_node_or_null("CollisionSource") as Node3D
 	check.call(town != null and village != null and source != null, "Environment: premium authored village scene is loaded")
 	check.call(game.neighborhood.find_children("*", "SlavicTown", true, false).is_empty(), "Environment: retired Slavic visual town is absent")
+	check.call(game.find_children("*", "PremiumVillage", true, false).size() == 1, "Main scene: one premium primary world is active")
+	check.call(game.find_children("*", "Neighborhood", true, false).is_empty(), "Main scene: Slavic fallback scene is not instantiated")
+	check.call(game.find_children("*", "PlayerController", true, false).size() == 1, "Main scene: one authoritative player is active")
+	check.call(game.find_children("*", "NPCManager", true, false).size() == 1 and game.find_children("*", "SaveManager", true, false).size() == 1, "Main scene: one NPC manager and save manager are active")
+	check.call(game.find_children("*", "InteractionUI", true, false).size() == 1 and game.find_children("*", "DebugUI", true, false).size() == 1, "Main scene: one interaction and debug UI are active")
 	var chunks := village.find_children("BakeChunk*", "MeshInstance3D", true, false)
 	check.call(chunks.size() > 0 and chunks.size() < 100, "Environment: authored PBR geometry stays below 100 draw batches")
 	check.call(chunks.size() == town.mesh_instance_count, "Environment: visible render nodes match saved mesh chunk count")
@@ -63,8 +68,23 @@ func run(game: Node3D, check: Callable) -> void:
 	for index in range(HERO_DOORWAYS.size()):
 		check.call(PlayerSpawnResolver.is_clear(game.player, HERO_DOORWAYS[index]), "Environment: hero doorway is physically clear " + str(index + 1))
 		check.call(_ground_hit(game, HERO_DOORWAYS[index], _collision_excludes(game)), "Environment: hero doorway has a supporting floor " + str(index + 1))
-	check.call(PlayerSpawnResolver.is_clear(game.player, game.world.location_position("PLAYER_QUARTERS")), "Environment: player house spawn capsule is clear")
-	check.call(_ground_hit(game, game.world.location_position("PLAYER_QUARTERS"), _collision_excludes(game)), "Environment: player house spawn rests on imported floor collision")
+	var player_start := town.get_node_or_null("PlayerStart") as Marker3D
+	check.call(player_start != null, "Spawn: authored exterior start marker is part of the active world")
+	if player_start != null:
+		check.call(PlayerSpawnResolver.is_clear(game.player, player_start.global_position), "Spawn: player capsule is clear outside the house")
+		check.call(_ground_hit(game, player_start.global_position, _collision_excludes(game)), "Spawn: exterior start rests on imported ground")
+		check.call(player_start.position.x > float(game.world.locations["PLAYER_QUARTERS"]["bounds"][1]), "Spawn: exterior start lies beyond the player-house footprint")
+		var doorway_distance := player_start.global_position.distance_to(HERO_DOORWAYS[3])
+		check.call(doorway_distance >= 1.5 and doorway_distance <= 4.0, "Spawn: exterior start remains close to the entrance")
+		for step in range(7):
+			var progress := float(step) / 6.0
+			var doorway_point := Vector3(
+				lerpf(HERO_DOORWAYS[3].x, player_start.global_position.x, progress),
+				lerpf(HERO_DOORWAYS[3].y, player_start.global_position.y, progress),
+				HERO_DOORWAYS[3].z
+			)
+			check.call(PlayerSpawnResolver.is_clear(game.player, doorway_point), "House access: capsule path is clear at step " + str(step))
+			check.call(_ground_hit(game, doorway_point, _collision_excludes(game)), "House access: doorway path has continuous ground")
 	var unique_models: Dictionary = {}
 	for npc_id: String in game.npc_manager.entities:
 		var entity := game.npc_manager.entities[npc_id] as NPCController
@@ -83,13 +103,21 @@ func run(game: Node3D, check: Callable) -> void:
 		check.call(entity.name_label.position.y >= 1.7 and entity.name_label.position.y <= 2.1, "NPC visual: subtle name label follows real human height " + npc_id)
 		check.call(_within_human_scale(rig), "NPC visual: imported humanoid is normalized near human scale " + npc_id)
 	check.call(unique_models.size() == 6, "NPC visual: six distinct pack models are assigned")
+	var expected_npc_ids: Array[String] = ["alex", "sarah", "mike", "emma", "david", "noah"]
+	check.call(game.world.npcs.size() == expected_npc_ids.size() and game.npc_manager.entities.size() == expected_npc_ids.size(), "NPC identity: all six main NPCs remain instantiated")
+	for npc_id: String in expected_npc_ids:
+		check.call(game.world.npcs.has(npc_id) and game.npc_manager.entities.has(npc_id), "NPC identity: expected saved ID remains " + npc_id)
 	var router := game.npc_manager.path_router as NPCPathRouter
 	check.call(router != null and router.ready and router.grid_step >= 0.75 and router.patch_cells >= 3, "NPC navigation: collision-tested walkway routing settings load")
 	var excludes := _collision_excludes(game)
+	var scheduled_positions: Array[Vector3] = []
 	for npc: NPCData in game.world.npcs.values():
 		var point: Vector3 = game.world.npc_position(npc)
 		check.call(_capsule_clear(game, point, excludes), "NPC schedule: capsule is clear at the scheduled interior/zone " + npc.id)
 		check.call(_ground_hit(game, point, excludes), "NPC schedule: scheduled spawn rests on world collision " + npc.id)
+		for other_position: Vector3 in scheduled_positions:
+			check.call(point.distance_to(other_position) >= 0.8, "NPC schedule: spawn points do not overlap " + npc.id)
+		scheduled_positions.append(point)
 	print("DAY 5 ENVIRONMENT: ", chunks.size(), " PBR batches, ", town.structural_collision_count, " static collision sections, ", town.collision_shape_count, " box shapes; six distinct rigged NPCs.")
 
 func _within_human_scale(rig: NPCVisual) -> bool:

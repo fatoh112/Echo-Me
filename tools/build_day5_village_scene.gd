@@ -9,6 +9,8 @@ const MESH_DIR := "res://assets/environment/mountain_village/baked/"
 const CELL_SIZE := 80.0
 const LIGHTMAP_TEXEL_SIZE := 0.32
 const HOUSE_CENTERS: Array[Vector2] = [Vector2(41.5, -57.0), Vector2(37.0, -79.5), Vector2(24.0, -92.0), Vector2(13.2, -81.0)]
+const PLAYER_HOUSE_DOOR_CENTER := Vector3(15.170366, 2.29008, -80.91562)
+const PLAYER_HOUSE_DOOR_WIDTH := 1.4
 
 var chunks: Dictionary = {}
 var collision_groups: Dictionary = {}
@@ -220,6 +222,10 @@ func _collect_collision(mesh_instance: MeshInstance3D, cell: Vector2i) -> void:
 			return
 		collision_seen_positions[dedupe_key] = true
 	var house_index := _house_index_for(mesh_instance.global_position) if (name.begins_with("Floor_") or name.begins_with("Wall_") or name.begins_with("duv") or name.begins_with("yan")) else -1
+	if name == "Wall_400x244" and house_index == 3:
+		# This angled upper panel's bounding box reaches down through the real doorway.
+		# Keep its imported visual, but omit its imprecise box from house collision.
+		return
 	var key := "house_%d" % house_index if house_index >= 0 else "world_%d_%d" % [cell.x, cell.y]
 	if not collision_groups.has(key):
 		collision_groups[key] = []
@@ -256,18 +262,47 @@ func _write_collision(scene_root: Node3D) -> int:
 			box_size.x = maxf(box_size.x, 0.08)
 			box_size.y = maxf(box_size.y, 0.08)
 			box_size.z = maxf(box_size.z, 0.08)
+			var wall_center := source_transform * bounds.get_center()
+			if _is_player_house_door_wall(key, wall_center, box_size):
+				_add_doorway_collision(body, scene_root, source_transform.basis.orthonormalized(), wall_center, box_size)
+				continue
 			var box := BoxShape3D.new()
 			box.size = box_size
 			var collision := CollisionShape3D.new()
 			collision.name = "Box_%03d" % index
 			collision.shape = box
-			collision.position = source_transform * bounds.get_center()
+			collision.position = wall_center
 			collision.basis = source_transform.basis.orthonormalized()
 			body.add_child(collision)
 			collision.owner = scene_root
 			collision_shape_count += 1
 		count += 1
 	return count
+
+func _is_player_house_door_wall(key: String, center: Vector3, size: Vector3) -> bool:
+	return key == "house_3" \
+		and center.distance_to(PLAYER_HOUSE_DOOR_CENTER) < 0.35 \
+		and size.x < 0.3 \
+		and size.y > 1.8 \
+		and size.z > 7.5
+
+func _add_doorway_collision(body: StaticBody3D, scene_root: Node3D, wall_basis: Basis, wall_center: Vector3, wall_size: Vector3) -> void:
+	var side_length := (wall_size.z - PLAYER_HOUSE_DOOR_WIDTH) * 0.5
+	var side_offset := (PLAYER_HOUSE_DOOR_WIDTH + side_length) * 0.5
+	_add_collision_box(body, scene_root, "Box_005_DoorLeft", Vector3(wall_size.x, wall_size.y, side_length), Transform3D(wall_basis, wall_center + wall_basis * Vector3(0.0, 0.0, -side_offset)))
+	_add_collision_box(body, scene_root, "Box_005_DoorRight", Vector3(wall_size.x, wall_size.y, side_length), Transform3D(wall_basis, wall_center + wall_basis * Vector3(0.0, 0.0, side_offset)))
+	_add_collision_box(body, scene_root, "Box_005_DoorLintel", Vector3(wall_size.x, 0.1, PLAYER_HOUSE_DOOR_WIDTH), Transform3D(wall_basis, wall_center + wall_basis * Vector3(0.0, wall_size.y * 0.475, 0.0)))
+
+func _add_collision_box(body: StaticBody3D, scene_root: Node3D, node_name: String, size: Vector3, collision_transform: Transform3D) -> void:
+	var box := BoxShape3D.new()
+	box.size = size
+	var collision := CollisionShape3D.new()
+	collision.name = node_name
+	collision.shape = box
+	collision.transform = collision_transform
+	body.add_child(collision)
+	collision.owner = scene_root
+	collision_shape_count += 1
 
 func _set_owner(node: Node, scene_owner: Node) -> void:
 	for child in node.get_children():

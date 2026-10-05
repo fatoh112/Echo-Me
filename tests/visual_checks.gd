@@ -34,11 +34,35 @@ func run(game: Node3D, check: Callable) -> void:
 			check.call(material != null and material.albedo_texture != null and material.albedo_texture.get_width() <= 1024, "Visual: player PBR material remains imported within texture budget")
 	var saved_position: Vector3 = game.player.global_position
 	var old_profile: Dictionary = game.world.player_profile.to_dict()
+	var spawn_marker := game.neighborhood.get_node_or_null("PlayerStart") as Marker3D
+	check.call(spawn_marker != null, "Spawn: premium village has an authored exterior start marker")
+	var expected_spawn := spawn_marker.global_position if spawn_marker != null else Vector3(17.0, 1.303, -80.95)
+	check.call(game.world.player_position.distance_to(expected_spawn) < 0.05, "Spawn: new-world default matches the authored marker")
 	game.player.global_position = Vector3(0, 0, 11)
-	check.call(PlayerSpawnResolver.place(game.player, game.world), "Visual: legacy Day 1 spawn relocates into the village")
-	check.call(game.world.player_profile.to_dict() == old_profile, "Visual: spawn migration preserves behavior history")
+	check.call(PlayerSpawnResolver.place(game.player, game.world), "Spawn: invalid Day 1 position recovers to the premium exterior")
+	check.call(game.world.player_profile.to_dict() == old_profile, "Spawn: recovery preserves behavior history")
 	var migrated_position: Vector3 = game.player.global_position
-	check.call(migrated_position.distance_to(game.world.location_position("PLAYER_QUARTERS")) < 0.1, "Visual: legacy spawn resolves to the safe player house")
+	check.call(migrated_position.distance_to(expected_spawn) < 0.1, "Spawn: invalid old position resolves outside the player house")
+	check.call(PlayerSpawnResolver.is_clear(game.player, migrated_position), "Spawn: default capsule does not intersect world collision")
+	check.call(PlayerSpawnResolver.has_ground(game.player, migrated_position), "Spawn: default feet rest on supporting ground")
+	var doorway_distance := migrated_position.distance_to(Vector3(14.2, 1.4, -80.95))
+	check.call(doorway_distance >= 1.5 and doorway_distance <= 4.0, "Spawn: start is a short step outside the player doorway")
+	if spawn_marker != null:
+		var town_direction: Vector3 = game.world.location_position("TOWN_SQUARE") - migrated_position
+		town_direction.y = 0.0
+		town_direction = town_direction.normalized()
+		var body_forward: Vector3 = -game.player.body_visual.global_transform.basis.z.normalized()
+		var camera_forward: Vector3 = -camera.global_transform.basis.z.normalized()
+		check.call(body_forward.dot(town_direction) > 0.95, "Spawn: player faces toward the village square")
+		check.call(camera_forward.dot(town_direction) > 0.95, "Spawn: camera opens toward the village square")
+	game.player.global_position = Vector3(14.2, 1.4, -80.95)
+	check.call(PlayerSpawnResolver.place(game.player, game.world), "Spawn: stale house-doorway start recovers outside")
+	check.call(game.player.global_position.distance_to(expected_spawn) < 0.1, "Spawn: doorway recovery uses the new exterior marker")
+	var valid_saved_position := Vector3(18.5, 1.303, -80.5)
+	game.player.global_position = valid_saved_position
+	check.call(PlayerSpawnResolver.is_valid_position(game.player, valid_saved_position), "Spawn: valid saved village point passes collision and ground checks")
+	check.call(not PlayerSpawnResolver.place(game.player, game.world), "Spawn: existing valid world position is preserved")
+	check.call(game.player.global_position.distance_to(valid_saved_position) < 0.01, "Spawn: valid save restores its exact position")
 	game.player.global_position = Vector3(12.45, 1.4, -81.0)
 	game.player.velocity = Vector3.ZERO
 	arm.rotation = Vector3(-0.16, 0, 0)

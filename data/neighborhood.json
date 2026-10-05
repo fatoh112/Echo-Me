@@ -3,6 +3,7 @@
     "display_name": "Player House",
     "bounds": [11, 16, -85, -76],
     "position": [12.45, 1.4, -81.0],
+    "spawn_position": [17.0, 1.303, -80.95],
     "opportunities": {"BEFRIEND": 0.5, "IGNORE": 0.5}
   },
   "TOWN_SQUARE": {

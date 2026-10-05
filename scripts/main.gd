@@ -55,8 +55,7 @@ func _process(delta: float) -> void:
 	_proximity_elapsed += delta
 	_logical_elapsed += delta
 	if player.global_position.y < -10.0:
-		player.global_position = world.location_position("PLAYER_QUARTERS")
-		player.velocity = Vector3.ZERO
+		PlayerSpawnResolver.place(player, world, true)
 	if _proximity_elapsed >= 0.15:
 		_proximity_elapsed = 0.0
 		_update_proximity()

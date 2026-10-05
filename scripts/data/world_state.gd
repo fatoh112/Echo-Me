@@ -8,7 +8,7 @@ var npcs: Dictionary = {}
 var locations: Dictionary = {}
 var reputation := ReputationSystem.new()
 var game_minutes := 1020.0
-var player_position := Vector3(12.45, 1.4, -81.0)
+var player_position := Vector3(17.0, 1.303, -80.95)
 var last_player_location := "PLAYER_QUARTERS"
 var echo_location_id := "TOWN_SQUARE"
 var echo_turn_index := 0
@@ -20,6 +20,10 @@ var last_decisions: Array[Dictionary] = []
 func _init(save_seed: int = 94721) -> void:
 	echo_seed = save_seed
 	locations = DataUtils.dictionary(DataUtils.read_json("res://data/neighborhood.json"))
+	var quarters := DataUtils.dictionary(locations.get("PLAYER_QUARTERS", {}))
+	var spawn_position: Variant = quarters.get("spawn_position", [])
+	if spawn_position is Array and spawn_position.size() == 3:
+		player_position = Vector3(float(spawn_position[0]), float(spawn_position[1]), float(spawn_position[2]))
 	var definitions: Variant = DataUtils.read_json("res://data/npcs/neighbors.json")
 	if definitions is Array:
 		for definition: Dictionary in definitions:

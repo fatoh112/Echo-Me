@@ -112,3 +112,7 @@ modulate = Color(0.83, 0.76, 0.62, 0.84)
 billboard = 1
 visibility_range_end = 24.0
 cast_shadow = 0
+
+[node name="PlayerStart" type="Marker3D" parent="."]
+position = Vector3(17, 1.303, -80.95)
+rotation = Vector3(0, 3.1293755, 0)
