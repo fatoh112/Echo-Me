@@ -8,8 +8,14 @@ var world: WorldState
 var nearby_id := ""
 var player: PlayerController
 var animation_label: Label
+var npc_animation_label: Label
 var _animation_elapsed := 0.0
 var _preview_index := -1
+var _npc_preview_index := -1
+var _npc_preview_id := ""
+var _npc_preview_original_position := Vector3.ZERO
+var _npc_preview_original_level := "LOGICAL"
+const NPC_PREVIEW_STATES := ["IDLE", "WALK", "RUN", "SIT", "JOG", "JUMP"]
 
 
 func _ready() -> void:
@@ -34,6 +40,7 @@ func _input(event: InputEvent) -> void:
 		panel.visible = not panel.visible
 		if not panel.visible and player != null:
 			player.visual.clear_preview()
+			_clear_npc_preview()
 		refresh()
 		get_viewport().set_input_as_handled()
 
@@ -45,12 +52,18 @@ func _process(delta: float) -> void:
 	if _animation_elapsed >= 0.1:
 		_animation_elapsed = 0
 		_refresh_animation()
+		if not _npc_preview_id.is_empty():
+			var preview := _get_npc(_npc_preview_id)
+			if preview != null and player != null:
+				preview.update_representation(player.global_position + Vector3(1.4, 0.0, 0.0), "ACTIVE", true)
 
 
 func _refresh_animation() -> void:
 	if player == null:
 		return
-	animation_label.text = "PLAYER ANIMATION: %s\nSPEED: %.2f | ON FLOOR: %s%s" % [player.visual.state_name(), player.horizontal_speed, str(player.is_on_floor()), "\nPreview (4 s); WASD cancels" if player.preview_locked else ""]
+	var selected_npc := _get_npc(_selected_npc_id())
+	var npc_state := selected_npc.visual_root.locomotion_state if selected_npc != null else "unavailable"
+	animation_label.text = "PLAYER ANIMATION: %s\nSPEED: %.2f | ON FLOOR: %s\nNPC ANIMATION: %s%s" % [player.visual.state_name(), player.horizontal_speed, str(player.is_on_floor()), npc_state, "\nPlayer preview (4 s); WASD cancels" if player.preview_locked else ""]
 
 
 func _cycle_preview() -> void:
@@ -65,6 +78,56 @@ func _stop_preview() -> void:
 	if player != null:
 		player.visual.clear_preview()
 		_refresh_animation()
+
+
+func _cycle_npc_preview() -> void:
+	if player == null or not panel.visible or not player.controls_enabled:
+		return
+	var id := _selected_npc_id()
+	var entity := _get_npc(id)
+	if entity == null:
+		return
+	if _npc_preview_id != id:
+		_clear_npc_preview()
+		_npc_preview_id = id
+		_npc_preview_original_position = entity.global_position
+		_npc_preview_original_level = entity.level
+		entity.update_representation(player.global_position + Vector3(1.4, 0.0, 0.0), "ACTIVE", true)
+	_npc_preview_index = (_npc_preview_index + 1) % NPC_PREVIEW_STATES.size()
+	var state: String = NPC_PREVIEW_STATES[_npc_preview_index]
+	entity.set_locomotion_override(state)
+	if npc_animation_label != null:
+		npc_animation_label.text = "NPC preview: %s — click to cycle" % state
+	_refresh_animation()
+
+
+func _selected_npc_id() -> String:
+	if world == null or npc_picker == null:
+		return ""
+	var selected := str(npc_picker.get_item_metadata(npc_picker.selected))
+	if selected.is_empty():
+		selected = nearby_id if world.npcs.has(nearby_id) else "alex"
+	return selected
+
+
+func _get_npc(npc_id: String) -> NPCController:
+	if npc_id.is_empty():
+		return null
+	var manager := get_parent().get_node_or_null("NPCManager") as NPCManager
+	return manager.entities.get(npc_id) as NPCController if manager != null else null
+
+
+func _clear_npc_preview() -> void:
+	if _npc_preview_id.is_empty():
+		return
+	var entity := _get_npc(_npc_preview_id)
+	if entity != null:
+		entity.clear_locomotion_override()
+		entity.update_representation(_npc_preview_original_position, _npc_preview_original_level, true)
+	_npc_preview_id = ""
+	_npc_preview_index = -1
+	if npc_animation_label != null:
+		npc_animation_label.text = "NPC preview: open F3 to test movement"
 
 
 func refresh(npc_id: String = "") -> void:
@@ -90,6 +153,9 @@ func refresh(npc_id: String = "") -> void:
 	lines.append("\nSELECTED: %s (%s)" % [npc.display_name, npc.role])
 	lines.append("Mood: %s | Memory Collision: %s" % [str(npc.current_state["mood"]), npc.collision_state])
 	lines.append("%s / %s / %s" % [str(npc.current_state["location_id"]), str(npc.current_state["activity"]), npc.activity_level])
+	var manager := get_parent().get_node_or_null("NPCManager") as NPCManager
+	if manager != null and manager.entities.has(selected):
+		lines.append("Walkway route: %s" % (manager.entities[selected] as NPCController).debug_route())
 	for value_name in NPCRelationship.VALUE_NAMES:
 		lines.append("%s: %.2f" % [value_name, float(npc.relationship.values[value_name])])
 	lines.append("Important/recent memories (%d retained):" % npc.memories.size())
@@ -123,6 +189,8 @@ func refresh(npc_id: String = "") -> void:
 
 
 func _picked(_index: int) -> void:
+	if not _npc_preview_id.is_empty() and _npc_preview_id != _selected_npc_id():
+		_clear_npc_preview()
 	refresh()
 
 
@@ -162,6 +230,14 @@ func _build() -> void:
 	stop.text = "Stop"
 	stop.pressed.connect(_stop_preview)
 	previews.add_child(stop)
+	var npc_preview := Button.new()
+	npc_preview.text = "Preview NPC animation"
+	npc_preview.pressed.connect(_cycle_npc_preview)
+	content.add_child(npc_preview)
+	npc_animation_label = Label.new()
+	npc_animation_label.text = "NPC preview: open F3 to test movement"
+	npc_animation_label.add_theme_font_size_override("font_size", 12)
+	content.add_child(npc_animation_label)
 	npc_picker = OptionButton.new()
 	npc_picker.item_selected.connect(_picked)
 	content.add_child(npc_picker)

@@ -5,14 +5,14 @@ func run(game: Node3D, check: Callable) -> void:
 	var visual := player.visual
 	var tree := visual.animation_tree.tree_root as AnimationNodeStateMachine
 	var library := visual.animation_player.get_animation_library("locomotion")
-	check.call(library != null and library.get_animation_list().size() == 14, "Animation: fourteen baked clips load")
+	check.call(library != null and library.get_animation_list().size() == 16, "Animation: baked movement and crouch clips load")
 	check.call(visual.animations_ready and visual.animation_tree.active, "Animation: valid active tree")
 	check.call(visual.animation_tree.get_node(visual.animation_tree.anim_player) == visual.animation_player, "Animation: tree references authoritative player")
 	check.call(player.find_children("*", "Skeleton3D", true, false).size() == 1, "Animation: exactly one player skeleton")
 	check.call(visual.model.find_children("*", "MeshInstance3D", true, false).size() == 1, "Animation: exactly one skinned body")
 	check.call(visual.animation_player.get_animation_library_list().size() == 1, "Animation: no imported bind-pose library")
 	check.call(player.get_node("CameraPivot").get_parent() == player, "Animation: camera independent of skeleton")
-	check.call(InputMap.has_action("run") and InputMap.has_action("jump"), "Animation: run/jump inputs registered")
+	check.call(InputMap.has_action("run") and InputMap.has_action("jump") and InputMap.has_action("crouch"), "Animation: run/jump/crouch inputs registered")
 	check.call(player.run_multiplier >= 1.6 and player.run_multiplier <= 1.9, "Animation: configured run ratio")
 	check.call(visual.transition_seconds >= 0.15 and visual.transition_seconds <= 0.25, "Animation: short crossfades")
 	for state: String in PlayerVisual.TREE_STATES:
@@ -52,7 +52,9 @@ func run(game: Node3D, check: Callable) -> void:
 	var old_rotation := player.body_visual.rotation
 	var old_camera := player.camera_pivot.rotation
 	player.controls_enabled = true
-	player.global_position = Vector3(4, 0, 7)
+	player.global_position = Vector3(14.0, 1.34, -81.0)
+	player.velocity = Vector3.ZERO
+	await _frames(game, 2)
 	player.velocity = Vector3.ZERO
 	player.camera_pivot.rotation = Vector3(-0.16, 0, 0)
 	visual.talk_seconds = 0
@@ -71,7 +73,9 @@ func run(game: Node3D, check: Callable) -> void:
 	check.call(player.camera_pivot.rotation.is_equal_approx(Vector3(-0.16, 0, 0)), "Animation: run never rotates camera")
 	Input.action_release("run")
 	Input.action_release("move_forward")
-	player.global_position = Vector3(4, 0, 7)
+	player.global_position = Vector3(14.0, 1.34, -81.0)
+	player.velocity = Vector3.ZERO
+	await _frames(game, 2)
 	Input.action_press("move_left")
 	await _frames(game, 25)
 	check.call(visual.state_name() == "STRAFE_LEFT" and player.velocity.x < 0, "Animation: camera-relative left travel")
@@ -79,7 +83,7 @@ func run(game: Node3D, check: Callable) -> void:
 	Input.action_release("move_left")
 	Input.action_press("move_right")
 	Input.action_press("run")
-	await _frames(game, 25)
+	await _frames(game, 20)
 	check.call(visual.state_name() == "STRAFE_RIGHT" and player.velocity.x > 0, "Animation: camera-relative right travel")
 	check.call(visual._strafe_blend > 0.9, "Animation: fast lateral gait blends by speed")
 	Input.action_release("move_right")
@@ -90,6 +94,31 @@ func run(game: Node3D, check: Callable) -> void:
 	check.call((-player.body_visual.global_basis.z).dot(player.velocity.normalized()) > 0.98, "Animation: backward travel rotates toward movement")
 	Input.action_release("move_back")
 	await _frames(game, 5)
+	player.global_position = Vector3(17.0, 1.34, -70.0)
+	player.velocity = Vector3.ZERO
+	await _frames(game, 2)
+	var standing_height := (player.collision_shape.shape as CapsuleShape3D).height
+	Input.action_press("crouch")
+	await _frames(game, 3)
+	check.call(player.crouching and is_equal_approx((player.collision_shape.shape as CapsuleShape3D).height, player.crouch_capsule_height), "Animation: crouch lowers the player capsule")
+	check.call(visual.state_name() == "CROUCH" and player.camera_pivot.position.y < 1.55, "Animation: crouch changes pose and camera height")
+	Input.action_press("move_forward")
+	await _frames(game, 12)
+	check.call(visual.state_name() == "CROUCH_WALK" and is_equal_approx(player.horizontal_speed, player.walk_speed * player.crouch_speed_multiplier), "Animation: crouched movement uses the crouch walk clip and speed")
+	Input.action_release("move_forward")
+	Input.action_release("crouch")
+	await _frames(game, 4)
+	check.call(not player.crouching and is_equal_approx((player.collision_shape.shape as CapsuleShape3D).height, standing_height), "Animation: releasing crouch safely restores the standing capsule")
+	player.global_position = Vector3(14.0, 1.34, -81.0)
+	await _frames(game, 2)
+	Input.action_press("crouch")
+	await _frames(game, 3)
+	Input.action_release("crouch")
+	await _frames(game, 3)
+	check.call(player.crouching, "Animation: low clearance keeps the player crouched after key release")
+	player.global_position = Vector3(17.0, 1.34, -70.0)
+	await _frames(game, 4)
+	check.call(not player.crouching, "Animation: player stands again after leaving low clearance")
 	var start_y := player.global_position.y
 	Input.action_press("jump")
 	await _frames(game, 3)
@@ -131,13 +160,14 @@ func run(game: Node3D, check: Callable) -> void:
 	Input.action_release("move_forward")
 	await _frames(game, 3)
 	var sarah: NPCData = game.world.npcs.sarah
-	player.global_position = game.world.npc_position(sarah) + Vector3(0, 0, 2)
+	player.global_position = game.world.npc_position(sarah) + Vector3(1.5, 0, 0)
+	player.velocity = Vector3.ZERO
 	game.npc_manager.update_entities(player.global_position)
 	game._update_proximity()
-	await _frames(game, 5)
+	await _frames(game, 8)
 	game.interaction_ui.open_for_npc(sarah)
 	await _frames(game, 3)
-	check.call(visual.state_name() == "TALK" and not player.controls_enabled, "Animation: interaction starts timed Talk")
+	check.call(visual.state_name() == "TALK" and not player.controls_enabled and game.npc_manager.entities["sarah"].talking, "Animation: interaction starts timed player and NPC Talk")
 	game.interaction_ui.close_all()
 	visual.talk_seconds = 0
 	game.debug_ui.refresh()
@@ -156,6 +186,28 @@ func _frames(game: Node, count: int) -> void:
 	await game.get_tree().process_frame
 
 func _npc_hooks(game: Node, check: Callable) -> void:
+	var alex := game.npc_manager.entities["alex"] as NPCController
+	var npc_library := alex.visual_root.animation_player.get_animation_library("locomotion")
+	check.call(npc_library != null and npc_library.get_animation_list().size() == 16, "Animation: NPCs load the shared retargeted player clips")
+	for state in ["WALK", "RUN", "SIT", "JOG", "JUMP"]:
+		check.call(alex.play_locomotion(state), "Animation: NPC supports player " + state)
+		check.call(alex.visual_root.animation_player.current_animation == "locomotion/" + state, "Animation: NPC is playing " + state)
+	alex.visual_root.set_animation_active(true)
+	var npc_skeleton := alex.visual_root._humanoid.find_child("Skeleton3D", true, false) as Skeleton3D
+	var thigh_index := npc_skeleton.find_bone("Thigh_L")
+	var initial_thigh := npc_skeleton.get_bone_pose_rotation(thigh_index)
+	alex.play_locomotion("JOG")
+	await _frames(game, 12)
+	check.call(not initial_thigh.is_equal_approx(npc_skeleton.get_bone_pose_rotation(thigh_index)), "Animation: NPC retargeted clip changes the skinned pose")
+	alex.play_locomotion("IDLE")
+	var debug: DebugUI = game.debug_ui
+	debug.panel.visible = true
+	for state: String in DebugUI.NPC_PREVIEW_STATES:
+		debug._cycle_npc_preview()
+		var previewed := debug._get_npc(debug._npc_preview_id)
+		check.call(previewed != null and previewed.visual_root.locomotion_state == state, "Animation: F3 preview can select NPC " + state)
+	debug._clear_npc_preview()
+	debug.panel.visible = false
 	var model := Node3D.new()
 	var animations := AnimationPlayer.new()
 	animations.name = "AnimationPlayer"

@@ -1,4 +1,6 @@
-# Day 4.1: premium lighting and world polish
+# Day 4.1: premium lighting and world polish (historical)
+
+> Historical snapshot: this document describes the superseded Slavic Town / Compatibility-renderer pass. The active imported Mountain Village scene, current lighting values, route behavior, and editor bake notes are documented in [DAY5_MOUNTAIN_VILLAGE.md](DAY5_MOUNTAIN_VILLAGE.md). Numbers and scene paths below are preserved as historical Day 4.1 results.
 
 ## Scope
 

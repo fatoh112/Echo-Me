@@ -8,7 +8,7 @@ var npcs: Dictionary = {}
 var locations: Dictionary = {}
 var reputation := ReputationSystem.new()
 var game_minutes := 1020.0
-var player_position := Vector3(0, 0, 11)
+var player_position := Vector3(12.45, 1.4, -81.0)
 var last_player_location := "PLAYER_QUARTERS"
 var echo_location_id := "TOWN_SQUARE"
 var echo_turn_index := 0
@@ -116,9 +116,9 @@ static func from_dict(data: Dictionary) -> WorldState:
 	world.last_player_location = LocationRegistry.canonical(str(state.get("last_player_location", "PLAYER_QUARTERS")))
 	world.echo_location_id = LocationRegistry.canonical(str(state.get("echo_location_id", "TOWN_SQUARE")))
 	world.echo_turn_index = maxi(0, int(DataUtils.number(state.get("echo_turn_index", 0), 0.0)))
-	var position_data: Variant = state.get("player_position", [0, 0, 11])
+	var position_data: Variant = state.get("player_position", [12.45, 1.4, -81.0])
 	if position_data is Array and position_data.size() == 3:
-		world.player_position = Vector3(DataUtils.number(position_data[0], 0.0), DataUtils.number(position_data[1], 0.0), DataUtils.number(position_data[2], 11.0))
+		world.player_position = Vector3(DataUtils.number(position_data[0], 12.45), DataUtils.number(position_data[1], 1.4), DataUtils.number(position_data[2], -81.0))
 	var rows: Variant = data.get("event_history", [])
 	if rows is Array:
 		for row: Variant in rows:

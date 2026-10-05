@@ -75,7 +75,7 @@ func _run() -> void:
 	var save_path := "user://echo_me_self_test_%d.json" % Time.get_ticks_usec()
 	scratch_paths.append(save_path)
 	world.game_minutes = 777.0
-	world.player_position = Vector3(3, 0, 7)
+	world.player_position = Vector3(12.45, 1.4, -81.0)
 	world.last_player_location = "RESIDENTIAL_ROW"
 	_check(manager.save_world(world, 1000011.0, save_path), "E: save succeeds")
 	var loaded := manager.load_world(save_path)
@@ -199,6 +199,10 @@ func _test_scene() -> void:
 	await process_frame
 	await physics_frame
 	_check(game.npc_manager.entities.size() == 6, "Live scene creates all six reusable NPCs")
+	game.player.global_position = Vector3(14.0, 1.34, -81.0)
+	game.player.velocity = Vector3.ZERO
+	game.npc_manager.update_entities(game.player.global_position)
+	await physics_frame
 	var start_position: Vector3 = game.player.global_position
 	Input.action_press("move_forward")
 	for _frame in range(30):
@@ -206,11 +210,14 @@ func _test_scene() -> void:
 	Input.action_release("move_forward")
 	_check(game.player.global_position.distance_to(start_position) > 1.5, "Live CharacterBody3D movement")
 	_check(game.player.is_on_floor(), "Live ground collision")
-	var query := PhysicsRayQueryParameters3D.create(Vector3(-10, 2, -5), Vector3(-10, 2, -12))
+	var query := PhysicsRayQueryParameters3D.create(Vector3(37, 4.0, -79.5), Vector3(37, 5.5, -79.5))
+	for entity: NPCController in game.npc_manager.entities.values():
+		query.exclude.append(entity.get_rid())
+	query.exclude.append(game.player.get_rid())
 	var building_hit: Dictionary = game.get_world_3d().direct_space_state.intersect_ray(query)
 	_check(not building_hit.is_empty(), "Neighborhood buildings have working collision")
 	var sarah: NPCData = game.world.npcs["sarah"]
-	game.player.global_position = game.world.npc_position(sarah) + Vector3(0, 0, 2)
+	game.player.global_position = Vector3(16.8, 1.3, -65.0) + Vector3(0, 0, 2)
 	game.npc_manager.update_entities(game.player.global_position)
 	game._update_proximity()
 	_check(game.nearby != null and game.nearby.id == "sarah", "Generic nearby interaction selects Sarah")
@@ -248,13 +255,14 @@ func _test_scene() -> void:
 	_check(game.player.controls_enabled, "Closing summary restores controls")
 	await preload("res://tests/visual_checks.gd").new().run(game, _check)
 	await preload("res://tests/animation_checks.gd").new().run(game, _check)
+	await preload("res://tests/npc_route_checks.gd").new().run(game, _check)
 	await preload("res://tests/environment_checks.gd").new().run(game, _check)
 	var toggle := InputEventKey.new()
 	toggle.keycode = KEY_F3
 	toggle.pressed = true
 	game.debug_ui._input(toggle)
 	_check(game.debug_ui.panel.visible, "F3 reveals debug panel")
-	game.npc_manager.update_entities(Vector3(25, 0, 25))
+	game.npc_manager.update_entities(Vector3(200, 0, 200))
 	await process_frame
 	var noah: NPCController = game.npc_manager.entities["noah"]
 	_check(noah.level == "LOGICAL" and not noah.visible and noah.collider.disabled, "Logical NPC hides geometry/collision with no movement processing")

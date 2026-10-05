@@ -1,0 +1,86 @@
+{
+	"clips": {
+		"CROUCH": {
+			"duration_seconds": 8.33333333333333,
+			"loop_mode": 1,
+			"track_count": 41
+		},
+		"CROUCH_WALK": {
+			"duration_seconds": 0.966666666666667,
+			"loop_mode": 1,
+			"track_count": 41
+		},
+		"IDLE": {
+			"duration_seconds": 8.33333333333333,
+			"loop_mode": 1,
+			"track_count": 41
+		},
+		"JOG": {
+			"duration_seconds": 2.56666666666667,
+			"loop_mode": 1,
+			"track_count": 41
+		},
+		"JUMP": {
+			"duration_seconds": 0.97,
+			"loop_mode": 0,
+			"track_count": 41
+		},
+		"RUN": {
+			"duration_seconds": 0.7,
+			"loop_mode": 1,
+			"track_count": 41
+		},
+		"SIT": {
+			"duration_seconds": 9.56666666666667,
+			"loop_mode": 1,
+			"track_count": 41
+		},
+		"START_WALK": {
+			"duration_seconds": 1.86666666666667,
+			"loop_mode": 0,
+			"track_count": 41
+		},
+		"STRAFE_LEFT": {
+			"duration_seconds": 0.933333333333333,
+			"loop_mode": 1,
+			"track_count": 41
+		},
+		"STRAFE_LEFT_RUN": {
+			"duration_seconds": 0.666666666666667,
+			"loop_mode": 1,
+			"track_count": 41
+		},
+		"STRAFE_RIGHT": {
+			"duration_seconds": 0.933333333333333,
+			"loop_mode": 1,
+			"track_count": 41
+		},
+		"STRAFE_RIGHT_RUN": {
+			"duration_seconds": 0.666666666666667,
+			"loop_mode": 1,
+			"track_count": 41
+		},
+		"TALK": {
+			"duration_seconds": 5.16666666666667,
+			"loop_mode": 1,
+			"track_count": 41
+		},
+		"TURN_LEFT": {
+			"duration_seconds": 1.16666666666667,
+			"loop_mode": 0,
+			"track_count": 41
+		},
+		"TURN_RIGHT": {
+			"duration_seconds": 1.16666666666667,
+			"loop_mode": 0,
+			"track_count": 41
+		},
+		"WALK": {
+			"duration_seconds": 0.966666666666667,
+			"loop_mode": 1,
+			"track_count": 41
+		}
+	},
+	"source_library": "res://assets/animations/player/player_locomotion.res",
+	"target_skeleton": "res://assets/characters/npcs/medieval_people/Free Medieval 3D People Low Poly Pack/fbx/unral_better_export/rich_citizens_2.fbx"
+}

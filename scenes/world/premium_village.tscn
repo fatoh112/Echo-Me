@@ -1,0 +1,114 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/premium_village.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/world/mountain_village_optimized.tscn" id="2_village"]
+[ext_resource type="LightmapGIData" path="res://scenes/world/premium_village.lmbake" id="6_light_data"]
+
+[sub_resource type="Environment" id="Environment_Village"]
+background_mode = 2
+ambient_light_source = 2
+ambient_light_color = Color(0.48, 0.55, 0.65, 1)
+ambient_light_energy = 0.74
+reflected_light_source = 1
+tonemap_mode = 3
+tonemap_exposure = 0.82
+tonemap_white = 6.0
+
+[node name="Neighborhood" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="ImportedVillage" parent="." instance=ExtResource("2_village")]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_Village")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation = Vector3(-0.558505, -0.628319, 0)
+light_color = Color(1, 0.83, 0.68, 1)
+light_energy = 1.05
+shadow_enabled = true
+directional_shadow_max_distance = 64.0
+
+[node name="LightmapGI" type="LightmapGI" parent="."]
+visible = true
+generate_probes_subdiv = 2
+texel_scale = 0.32
+max_texture_size = 8192
+light_data = ExtResource("6_light_data")
+
+[node name="PlayerHouseSign" type="Label3D" parent="."]
+position = Vector3(12.45, 3.55, -81)
+text = "YOUR HOME"
+font_size = 18
+pixel_size = 0.0032
+outline_size = 3
+modulate = Color(0.83, 0.76, 0.62, 0.84)
+billboard = 1
+visibility_range_end = 24.0
+cast_shadow = 0
+
+[node name="TownSquareSign" type="Label3D" parent="."]
+position = Vector3(16.8, 3.45, -65)
+text = "THE WELL"
+font_size = 18
+pixel_size = 0.0032
+outline_size = 3
+modulate = Color(0.83, 0.76, 0.62, 0.84)
+billboard = 1
+visibility_range_end = 24.0
+cast_shadow = 0
+
+[node name="MerchantSign" type="Label3D" parent="."]
+position = Vector3(37, 7.03, -79.5)
+text = "ALEX · MERCHANT"
+font_size = 18
+pixel_size = 0.0032
+outline_size = 3
+modulate = Color(0.83, 0.76, 0.62, 0.84)
+billboard = 1
+visibility_range_end = 24.0
+cast_shadow = 0
+
+[node name="TavernSign" type="Label3D" parent="."]
+position = Vector3(41.5, 7.03, -57)
+text = "THE TAVERN"
+font_size = 18
+pixel_size = 0.0032
+outline_size = 3
+modulate = Color(0.83, 0.76, 0.62, 0.84)
+billboard = 1
+visibility_range_end = 24.0
+cast_shadow = 0
+
+[node name="ResidentialSign" type="Label3D" parent="."]
+position = Vector3(24, 3.55, -92)
+text = "RESIDENTIAL ROW"
+font_size = 18
+pixel_size = 0.0032
+outline_size = 3
+modulate = Color(0.83, 0.76, 0.62, 0.84)
+billboard = 1
+visibility_range_end = 24.0
+cast_shadow = 0
+
+[node name="WatchSign" type="Label3D" parent="."]
+position = Vector3(26.8, 5.4, -70.2)
+text = "THE WATCH"
+font_size = 18
+pixel_size = 0.0032
+outline_size = 3
+modulate = Color(0.83, 0.76, 0.62, 0.84)
+billboard = 1
+visibility_range_end = 24.0
+cast_shadow = 0
+
+[node name="AlleySign" type="Label3D" parent="."]
+position = Vector3(30.5, 5.4, -69)
+text = "BACK ALLEY"
+font_size = 18
+pixel_size = 0.0032
+outline_size = 3
+modulate = Color(0.83, 0.76, 0.62, 0.84)
+billboard = 1
+visibility_range_end = 24.0
+cast_shadow = 0

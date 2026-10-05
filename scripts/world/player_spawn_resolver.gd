@@ -3,8 +3,8 @@ class_name PlayerSpawnResolver
 
 static func place(player: CharacterBody3D, world: WorldState) -> bool:
 	var original := player.global_position
-	var candidate := Vector3(clampf(original.x, -28, 28), 0, clampf(original.z, -28, 28))
-	if is_clear(player, candidate):
+	var candidate := original
+	if _is_in_village(candidate) and is_clear(player, candidate):
 		player.global_position = candidate
 		return false
 	# Presentation changed, so an old saved position may now be inside a house.
@@ -19,6 +19,9 @@ static func place(player: CharacterBody3D, world: WorldState) -> bool:
 			world.player_position = anchor
 			return true
 	return false
+
+static func _is_in_village(position_value: Vector3) -> bool:
+	return position_value.x >= 7.0 and position_value.x <= 48.0 and position_value.z >= -108.0 and position_value.z <= -38.0 and position_value.y >= 0.6 and position_value.y <= 8.0
 
 static func is_clear(player: CharacterBody3D, position_value: Vector3) -> bool:
 	var query := PhysicsShapeQueryParameters3D.new()

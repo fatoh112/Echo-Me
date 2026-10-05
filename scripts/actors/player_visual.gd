@@ -2,9 +2,9 @@ extends Node3D
 class_name PlayerVisual
 
 const TARGET_HEIGHT := 1.82
-enum LocomotionState { IDLE, WALK, RUN, INTERACT, TALK, SIT, JUMP, STRAFE_LEFT, STRAFE_RIGHT, JOG, TURN_LEFT, TURN_RIGHT, START_WALK }
-const TREE_STATES := ["IDLE", "WALK", "RUN", "JUMP", "TALK", "SIT", "STRAFE_LEFT", "STRAFE_RIGHT", "JOG", "TURN_LEFT", "TURN_RIGHT", "START_WALK"]
-const PREVIEW_STATES := ["IDLE", "WALK", "RUN", "JUMP", "TALK", "SIT", "STRAFE_LEFT", "STRAFE_RIGHT", "JOG", "TURN_LEFT", "TURN_RIGHT", "START_WALK"]
+enum LocomotionState { IDLE, WALK, RUN, INTERACT, TALK, SIT, JUMP, STRAFE_LEFT, STRAFE_RIGHT, JOG, CROUCH, CROUCH_WALK, TURN_LEFT, TURN_RIGHT, START_WALK }
+const TREE_STATES := ["IDLE", "WALK", "RUN", "JUMP", "TALK", "SIT", "STRAFE_LEFT", "STRAFE_RIGHT", "JOG", "CROUCH", "CROUCH_WALK", "TURN_LEFT", "TURN_RIGHT", "START_WALK"]
+const PREVIEW_STATES := ["IDLE", "WALK", "RUN", "JUMP", "TALK", "SIT", "STRAFE_LEFT", "STRAFE_RIGHT", "JOG", "CROUCH", "CROUCH_WALK", "TURN_LEFT", "TURN_RIGHT", "START_WALK"]
 @export_range(0.15, 0.25, 0.01) var transition_seconds := 0.18
 @onready var model: Node3D = $KachujinModel
 @onready var animation_tree: AnimationTree = $AnimationTree
@@ -66,7 +66,7 @@ func _physics_process(delta: float) -> void:
 		_strafe_blend = move_toward(_strafe_blend, target_blend, delta / transition_seconds)
 		animation_tree.set("parameters/" + next_state + "/Gait/blend_position", _strafe_blend)
 		native_speed = lerpf(_native_speed(next_state), _native_speed(next_state + "_RUN"), _strafe_blend)
-	var moving := next_state in ["WALK", "RUN", "STRAFE_LEFT", "STRAFE_RIGHT", "JOG"]
+	var moving := next_state in ["WALK", "RUN", "STRAFE_LEFT", "STRAFE_RIGHT", "JOG", "CROUCH_WALK"]
 	var target_rate := clampf(horizontal_speed / maxf(native_speed, 0.1), 0.25, 3.5) if moving else 1.0
 	if not preview_state.is_empty():
 		target_rate = 1.0
@@ -80,6 +80,8 @@ func _choose_state() -> String:
 		return preview_state
 	if not controller.is_on_floor():
 		return "JUMP"
+	if controller.crouching:
+		return "CROUCH_WALK" if horizontal_speed > 0.1 else "CROUCH"
 	if horizontal_speed > 0.1:
 		talk_seconds = 0.0
 		# Identify lateral travel relative to the camera, including collision slides.
@@ -121,6 +123,8 @@ func state_name() -> String:
 
 
 func _native_speed(state: String) -> float:
+	if state == "CROUCH_WALK":
+		return float(DataUtils.dictionary(_clip_data.get("WALK", {})).get("native_speed_mps", 0.0))
 	return float(DataUtils.dictionary(_clip_data.get(state, {})).get("native_speed_mps", 0.0))
 
 

@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "notes": "Nearby NPC routes are built from the imported village collision. Grid cells are accepted only where a standing humanoid capsule fits; edges require clear floor and body space. Background NPCs never build or follow a route.",
+  "grid_step": 1.25,
+  "patch_cells": 6,
+  "pause_chance": 0.18,
+  "pause_min_seconds": 0.7,
+  "pause_max_seconds": 2.8
+}

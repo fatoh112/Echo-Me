@@ -1,123 +1,58 @@
 {
   "PLAYER_QUARTERS": {
-    "display_name": "Player Quarters",
-    "bounds": [-5, 5, 7, 16],
-    "position": [
-      0,
-      0,
-      11
-    ],
-    "opportunities": {
-      "BEFRIEND": 0.5,
-      "IGNORE": 0.5
-    }
+    "display_name": "Player House",
+    "bounds": [11, 16, -85, -76],
+    "position": [12.45, 1.4, -81.0],
+    "opportunities": {"BEFRIEND": 0.5, "IGNORE": 0.5}
   },
   "TOWN_SQUARE": {
     "display_name": "Town Square",
-    "bounds": [-7, 7, -10, 7],
-    "position": [
-      0,
-      0,
-      -5
-    ],
+    "bounds": [11, 24, -74, -59],
+    "position": [16.8, 1.3, -65.0],
     "npc_offsets": {
-      "alex": [-4, 0, -2],
-      "sarah": [-3, 0, 0],
-      "mike": [2.7, 0, -3],
-      "emma": [4, 0, 2],
-      "david": [0, 0, -2],
-      "noah": [5.2, 0, 0]
+      "alex": [5.2, 0, -1.2], "sarah": [-1.7, 0, 1.0],
+      "mike": [2.1, 0, 0.8], "emma": [-3.2, 0, 1.2],
+        "david": [4.0, 0, 2.0], "noah": [-4.8, 0.0, 6.0]
     },
-    "opportunities": {
-      "DEFEND": 0.9,
-      "THREATEN": 0.6,
-      "INSULT": 0.6,
-      "BEFRIEND": 1,
-      "HELP": 0.85
-    }
+    "opportunities": {"DEFEND": 0.9, "THREATEN": 0.6, "INSULT": 0.6, "BEFRIEND": 1.0, "HELP": 0.85}
   },
   "MERCHANT_SHOP": {
-    "display_name": "Merchant Shop",
-    "bounds": [-19, -7, -10, 1],
-    "position": [
-      -10,
-      0,
-      -6
-    ],
-    "opportunities": {
-      "STEAL": 1,
-      "GIVE": 0.85,
-      "HELP": 0.8,
-      "LIE": 0.75
-    }
+    "display_name": "Merchant House / Shop",
+    "bounds": [32, 43, -85, -74],
+    "position": [37.0, 4.88, -79.5],
+    "npc_offsets": {"alex": [-0.8, 0, -0.7]},
+    "opportunities": {"STEAL": 1.0, "GIVE": 0.85, "HELP": 0.8, "LIE": 0.75}
   },
   "TAVERN": {
-    "display_name": "The Amber Hearth / Tavern",
-    "bounds": [7, 19, -10, 1],
-    "position": [
-      10,
-      0,
-      -6
-    ],
-    "opportunities": {
-      "BEFRIEND": 0.95,
-      "GIVE": 0.8,
-      "HELP": 0.8,
-      "INSULT": 0.65
-    }
+    "display_name": "The Hearth / Tavern",
+    "bounds": [38, 45, -62, -51],
+    "position": [41.5, 4.88, -57.0],
+    "npc_offsets": {"emma": [-0.2, 0, 0.8]},
+    "opportunities": {"BEFRIEND": 0.95, "GIVE": 0.8, "HELP": 0.8, "INSULT": 0.65}
   },
   "RESIDENTIAL_ROW": {
-    "display_name": "Residential Row",
-    "bounds": [7, 27, 6, 15],
-    "position": [
-      10,
-      0,
-      9
-    ],
+    "display_name": "Residential House",
+    "bounds": [20, 29, -99, -86],
+    "position": [24.0, 1.4, -92.0],
     "npc_offsets": {
-      "alex": [-1.5, 0, -1],
-      "sarah": [0, 0, 2.8],
-      "mike": [5.5, 0, 2],
-      "emma": [3, 0, 4],
-      "david": [1, 0, -1.8],
-      "noah": [7.4, 0, 0.8]
+      "alex": [-2.8, 0, -2.8], "sarah": [2.8, 0, -2.8],
+      "mike": [-2.8, 0, 2.8], "emma": [2.8, 0, 2.8],
+      "david": [0.0, 0, 4.0], "noah": [0.0, 0, -4.0]
     },
-    "opportunities": {
-      "BETRAY": 0.8,
-      "HELP": 0.8,
-      "LIE": 0.7,
-      "IGNORE": 0.65
-    }
+    "opportunities": {"BETRAY": 0.8, "HELP": 0.8, "LIE": 0.7, "IGNORE": 0.65}
   },
   "BACK_ALLEY": {
     "display_name": "Back Alley",
-    "bounds": [-3, 3, -28, -12],
-    "position": [
-      0,
-      0,
-      -18
-    ],
-    "opportunities": {
-      "THREATEN": 1,
-      "STEAL": 0.9,
-      "BETRAY": 0.9,
-      "INSULT": 0.85
-    }
+    "bounds": [27, 36, -76, -64],
+    "position": [30.5, 1.2, -69.0],
+    "npc_offsets": {"david": [0.0, 0.0, 0.0]},
+    "opportunities": {"THREATEN": 1.0, "STEAL": 0.9, "BETRAY": 0.9, "INSULT": 0.85}
   },
   "WATCH_POST": {
-    "display_name": "Town Watch Post",
-    "bounds": [-20, -7, 4, 14],
-    "position": [
-      -10,
-      0,
-      9
-    ],
-    "opportunities": {
-      "DEFEND": 0.95,
-      "HELP": 0.8,
-      "LIE": 0.4,
-      "THREATEN": 0.3,
-      "STEAL": 0.25
-    }
+    "display_name": "Town Watch",
+    "bounds": [22, 31, -75, -65],
+    "position": [26.8, 3.25, -70.2],
+    "npc_offsets": {"noah": [0.5, 0.0, 1.0]},
+    "opportunities": {"DEFEND": 0.95, "HELP": 0.8, "LIE": 0.4, "THREATEN": 0.3, "STEAL": 0.25}
   }
 }

@@ -1,12 +1,24 @@
 extends Node3D
 class_name NPCVisual
 
+const NPC_MODELS: Dictionary = {
+	"alex": preload("res://assets/characters/npcs/medieval_people/Free Medieval 3D People Low Poly Pack/fbx/unral_better_export/rich_citizens_2.fbx"),
+	"sarah": preload("res://assets/characters/npcs/medieval_people/Free Medieval 3D People Low Poly Pack/fbx/unral_better_export/peasant_2.fbx"),
+	"mike": preload("res://assets/characters/npcs/medieval_people/Free Medieval 3D People Low Poly Pack/fbx/unral_better_export/city_dwellers_1.fbx"),
+	"emma": preload("res://assets/characters/npcs/medieval_people/Free Medieval 3D People Low Poly Pack/fbx/unral_better_export/peasant_5.fbx"),
+	"david": preload("res://assets/characters/npcs/medieval_people/Free Medieval 3D People Low Poly Pack/fbx/unral_better_export/rich_citizens_3.fbx"),
+	"noah": preload("res://assets/characters/npcs/medieval_people/Free Medieval 3D People Low Poly Pack/fbx/unral_better_export/king.fbx"),
+}
+
 var piece_count := 0
 var animation_player: AnimationPlayer
 var animation_tree: AnimationTree
 var _humanoid: Node3D
 @export var humanoid_scene: PackedScene
 var _animation_active := false
+var _npc_id := ""
+var locomotion_state := "IDLE"
+const NPC_LOCOMOTION: AnimationLibrary = preload("res://assets/animations/npcs/npc_locomotion.res")
 
 # Optional model presentation hooks. NPCController knows only this interface.
 func replace_model(scene: PackedScene) -> void:
@@ -14,12 +26,29 @@ func replace_model(scene: PackedScene) -> void:
 		remove_child(child)
 		child.queue_free()
 	_humanoid = scene.instantiate() as Node3D
+	if _humanoid == null:
+		push_error("NPC visual scene root must be Node3D")
+		return
 	add_child(_humanoid)
+	_fit_model()
+	_prepare_imported_materials(_humanoid)
 	_set_dynamic_gi(_humanoid)
+	var skeleton := _humanoid.find_child("Skeleton3D", true, false) as Skeleton3D
 	animation_player = _humanoid.find_child("AnimationPlayer", true, false) as AnimationPlayer
 	animation_tree = _humanoid.find_child("AnimationTree", true, false) as AnimationTree
+	if animation_player == null:
+		animation_player = AnimationPlayer.new()
+		animation_player.name = "AnimationPlayer"
+		animation_player.root_node = NodePath("..")
+		_humanoid.add_child(animation_player)
+	if skeleton != null:
+		if animation_player.has_animation_library("locomotion"):
+			animation_player.remove_animation_library("locomotion")
+		animation_player.add_animation_library("locomotion", NPC_LOCOMOTION)
+		animation_player.animation_finished.connect(_on_animation_finished)
 	piece_count = 0
 	set_animation_active(_animation_active)
+	play_locomotion("IDLE")
 
 func set_animation_active(active: bool) -> void:
 	_animation_active = active
@@ -28,6 +57,22 @@ func set_animation_active(active: bool) -> void:
 		_humanoid.process_mode = Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
 	if animation_tree != null:
 		animation_tree.active = active
+	if animation_player != null:
+		animation_player.active = active
+
+func play_locomotion(state: String, playback_rate: float = 1.0) -> bool:
+	var clip := "locomotion/" + state.to_upper()
+	if animation_player == null or not animation_player.has_animation(clip):
+		return false
+	if locomotion_state != state.to_upper() or animation_player.current_animation != clip:
+		animation_player.play(clip, 0.24)
+		locomotion_state = state.to_upper()
+	animation_player.speed_scale = clampf(playback_rate, 0.5, 2.0)
+	return true
+
+func _on_animation_finished(animation_name: StringName) -> void:
+	if str(animation_name).ends_with("/JUMP") and locomotion_state == "JUMP":
+		play_locomotion("IDLE")
 
 func play_optional_animation(clip: StringName) -> bool:
 	if animation_player == null or not animation_player.has_animation(clip):
@@ -36,6 +81,9 @@ func play_optional_animation(clip: StringName) -> bool:
 	return true
 
 func build(npc_id: String) -> void:
+	_npc_id = npc_id
+	if humanoid_scene == null:
+		humanoid_scene = NPC_MODELS.get(npc_id) as PackedScene
 	if humanoid_scene != null and _humanoid == null:
 		replace_model(humanoid_scene)
 	if _humanoid != null:
@@ -82,8 +130,60 @@ func build(npc_id: String) -> void:
 		instance.gi_mode = GeometryInstance3D.GI_MODE_DYNAMIC
 	piece_count = builder.instance_count
 
+func _fit_model() -> void:
+	if _humanoid == null:
+		return
+	var bounds := _measure_bounds(_humanoid, _humanoid)
+	if bounds.size.y <= 0.01:
+		return
+	var style: Dictionary = WorldVisualConfig.NPC_STYLE.get(_npc_id, WorldVisualConfig.NPC_STYLE["mike"])
+	var desired_height := float(style.get("height", 1.74))
+	var scale_factor := desired_height / bounds.size.y
+	_humanoid.scale = Vector3.ONE * scale_factor
+	_humanoid.position.y = -bounds.position.y * scale_factor
+
+func _measure_bounds(root_node: Node3D, node: Node) -> AABB:
+	var result := AABB()
+	var found := false
+	if node is MeshInstance3D and (node as MeshInstance3D).mesh != null:
+		var mesh_instance := node as MeshInstance3D
+		var local_transform := root_node.global_transform.affine_inverse() * mesh_instance.global_transform
+		var mesh_bounds := mesh_instance.get_aabb()
+		for corner_index in range(8):
+			var transformed := local_transform * mesh_bounds.get_endpoint(corner_index)
+			if not found:
+				result = AABB(transformed, Vector3.ZERO)
+				found = true
+			else:
+				result = result.expand(transformed)
+	for child in node.get_children():
+		var child_bounds := _measure_bounds(root_node, child)
+		if child_bounds.size.length_squared() > 0.000001:
+			if not found:
+				result = child_bounds
+				found = true
+			else:
+				result = result.merge(child_bounds)
+	return result
+
 func _set_dynamic_gi(node: Node) -> void:
 	if node is GeometryInstance3D:
 		(node as GeometryInstance3D).gi_mode = GeometryInstance3D.GI_MODE_DYNAMIC
 	for child: Node in node.get_children():
 		_set_dynamic_gi(child)
+
+func _prepare_imported_materials(node: Node) -> void:
+	if node is MeshInstance3D:
+		var mesh_instance := node as MeshInstance3D
+		if mesh_instance.mesh != null:
+			for surface_index in range(mesh_instance.mesh.get_surface_count()):
+				var source_material := mesh_instance.get_active_material(surface_index) as StandardMaterial3D
+				if source_material == null:
+					continue
+				var material := source_material.duplicate() as StandardMaterial3D
+				# The supplied FBXs use all-black vertex-color channels for cloth regions;
+				# multiplying those into the shared atlas erases the authored diffuse map.
+				material.vertex_color_use_as_albedo = false
+				mesh_instance.set_surface_override_material(surface_index, material)
+	for child: Node in node.get_children():
+		_prepare_imported_materials(child)

@@ -1,141 +1,59 @@
 extends RefCounted
+## Retained player-rendering, animation-state, and legacy-save checks after the environment rebuild.
 
 func run(game: Node3D, check: Callable) -> void:
 	var visual := game.player.get_node("Body/VisualRoot") as PlayerVisual
-	check.call(visual != null and visual.model != null, "Visual: official FBX instanced under authoritative body")
-	check.call(visual.skeleton != null and visual.skeleton.get_bone_count() == 75, "Visual: 75-bone Mixamo skeleton")
-	check.call(visual.skeleton.find_bone("mixamorig_Hips") >= 0 and visual.skeleton.find_bone("mixamorig_LeftFoot") >= 0, "Visual: expected bone names")
-	check.call(is_equal_approx(visual.normalized_bounds.size.y, 1.82), "Visual: model normalized to 1.82 m")
-	check.call(absf(visual.normalized_bounds.position.y) < 0.01, "Visual: feet aligned to body ground origin")
-	check.call(visual.transform.basis.z.normalized().dot(Vector3.FORWARD) > 0.99, "Visual: Mixamo +Z corrected to controller -Z")
-	check.call(visual.model.find_children("*", "CollisionObject3D", true, false).is_empty(), "Visual: no imported physics body")
-	check.call(visual.model.find_children("*", "Camera3D", true, false).is_empty(), "Visual: no imported camera")
-	check.call(visual.model.find_children("*", "Light3D", true, false).is_empty(), "Visual: no imported light")
-	var shape := game.player.get_node("CollisionShape3D").shape as CapsuleShape3D
-	check.call(shape != null and is_equal_approx(shape.radius, 0.38) and is_equal_approx(shape.height, 1.8), "Visual: original player collision retained")
+	check.call(visual != null and visual.model != null, "Visual: official Kachujin model remains under authoritative player body")
+	check.call(visual.skeleton != null and visual.skeleton.get_bone_count() == 75, "Visual: original player skeleton remains intact")
+	check.call(visual.skeleton.find_bone("mixamorig_Hips") >= 0 and visual.skeleton.find_bone("mixamorig_LeftFoot") >= 0, "Visual: expected player bone names")
+	check.call(is_equal_approx(visual.normalized_bounds.size.y, 1.82), "Visual: player remains normalized to 1.82 m")
+	check.call(absf(visual.normalized_bounds.position.y) < 0.01, "Visual: player feet stay aligned to the movement origin")
+	check.call(visual.transform.basis.z.normalized().dot(Vector3.FORWARD) > 0.99, "Visual: player forward axis stays corrected for the controller")
+	check.call(visual.model.find_children("*", "CollisionObject3D", true, false).is_empty(), "Visual: imported player model adds no gameplay collision")
+	check.call(visual.model.find_children("*", "Camera3D", true, false).is_empty(), "Visual: imported player model adds no camera")
+	check.call(visual.model.find_children("*", "Light3D", true, false).is_empty(), "Visual: imported player model adds no lights")
+	var capsule := game.player.get_node("CollisionShape3D").shape as CapsuleShape3D
+	check.call(capsule != null and is_equal_approx(capsule.radius, 0.38) and is_equal_approx(capsule.height, 1.8), "Visual: original player collision stays authoritative")
 	var camera := game.player.get_node("CameraPivot/Camera3D") as Camera3D
 	var arm := game.player.get_node("CameraPivot") as SpringArm3D
-	check.call(arm != null and arm.shape != null, "Visual: camera uses sphere sweep SpringArm")
-	check.call(camera.fov >= 60 and camera.fov <= 75, "Visual: normal exploration FOV")
-	check.call(visual.animation_player != null and visual.animation_tree.tree_root is AnimationNodeStateMachine, "Visual: animation architecture exists")
+	check.call(arm != null and arm.shape != null, "Visual: third-person camera keeps sphere collision")
+	check.call(camera.fov >= 60 and camera.fov <= 75, "Visual: exploration camera keeps the third-person FOV")
+	check.call(visual.animation_player != null and visual.animation_tree.tree_root is AnimationNodeStateMachine, "Visual: original animation architecture remains loaded")
 	var machine := visual.animation_tree.tree_root as AnimationNodeStateMachine
-	for state in ["IDLE", "WALK", "RUN"]:
-		check.call(machine.has_node(state), "Visual: locomotion state " + state)
-	check.call(PlayerVisual.LocomotionState.has("INTERACT") and PlayerVisual.LocomotionState.has("TALK") and PlayerVisual.LocomotionState.has("SIT"), "Visual: INTERACT TALK SIT states retained")
-	check.call(visual.idle_clip in visual.usable_clips, "Visual: supplied matching Idle clip is usable")
-	check.call(visual.animation_player.get_animation(visual.idle_clip).length > 3.0, "Visual: real multi-frame Idle clip")
+	for state: String in ["IDLE", "WALK", "RUN"]:
+		check.call(machine.has_node(state), "Visual: locomotion state remains available " + state)
+	check.call(PlayerVisual.LocomotionState.has("INTERACT") and PlayerVisual.LocomotionState.has("TALK") and PlayerVisual.LocomotionState.has("SIT"), "Visual: interaction, talk, and preview states remain available")
+	check.call(visual.idle_clip in visual.usable_clips and visual.animation_player.get_animation(visual.idle_clip).length > 3.0, "Visual: supplied multi-frame idle clip remains available")
 	var all_clips := visual.idle_clip in visual.usable_clips and visual.walk_clip in visual.usable_clips and visual.run_clip in visual.usable_clips
-	check.call(visual.animation_tree.active == all_clips, "Visual: tree remains inactive when locomotion clips are missing")
-	# Mesh/material inputs are valid and capped for the target GPU.
-	for node: MeshInstance3D in visual.model.find_children("*", "MeshInstance3D", true, false):
-		check.call(node.gi_mode == GeometryInstance3D.GI_MODE_DYNAMIC, "Visual: moving player mesh receives dynamic light probes")
-		check.call(node.mesh != null and node.mesh.get_surface_count() == 2, "Visual: both imported material surfaces retained")
-		for index in range(node.mesh.get_surface_count()):
-			var material := node.get_surface_override_material(index) as StandardMaterial3D
-			check.call(material != null, "Visual: material override is valid")
-			check.call(material.albedo_texture != null and material.albedo_texture.get_width() <= 1024, "Visual: player texture import capped to 1K")
-	# The old 1,000 tiny paving-box count described the retired blockout.
-	# Preserve its density/batching intent using imported mesh complexity instead.
-	check.call(game.neighborhood.visual_batch_count <= 100 and game.neighborhood.assets.vertex_count > 100000 and game.neighborhood.assets.instance_count > 200, "Visual: detailed imported town uses bounded static spatial mesh batches")
-	var roof_arrays: Array = game.neighborhood.builder._mesh("roof").surface_get_arrays(0)
-	var roof_vertices: PackedVector3Array = roof_arrays[Mesh.ARRAY_VERTEX]
-	var roof_normals: PackedVector3Array = roof_arrays[Mesh.ARRAY_NORMAL]
-	for index in range(roof_vertices.size()):
-		if roof_vertices[index].y > 0.9 and absf(roof_normals[index].z) < 0.8:
-			check.call(roof_normals[index].y > 0, "Visual: roof slope normals face upward")
-	var lightmap := game.neighborhood.get_node("LightmapGI") as LightmapGI
-	var environment_holder := game.neighborhood.get_node("LightmapGI/Environment") as Node3D
-	var world_environment := environment_holder.get_node("WorldEnvironment") as WorldEnvironment
-	var low_quality := "--echo-low-graphics" in OS.get_cmdline_user_args()
-	check.call(lightmap != null and lightmap.light_data != null and lightmap.generate_probes_subdiv == LightmapGI.GENERATE_PROBES_SUBDIV_16, "Visual: LightmapGI data and dynamic probes are prepared")
-	check.call(world_environment.environment.tonemap_mode == Environment.TONE_MAPPER_ACES and world_environment.environment.ssao_enabled == not low_quality and world_environment.environment.fog_enabled and world_environment.environment.glow_enabled == not low_quality, "Visual: ACES, Compatibility effects and depth fog quality profile")
-	check.call(environment_holder.find_children("*", "DirectionalLight3D", true, false).size() == 1, "Visual: one primary sun")
-	check.call(environment_holder.find_children("*", "OmniLight3D", true, false).size() == 2, "Visual: only two local lamps")
-	var sun := environment_holder.find_child("Sunset", true, false) as DirectionalLight3D
-	check.call(sun != null and sun.shadow_enabled == not low_quality and sun.light_bake_mode == Light3D.BAKE_DISABLED and sun.directional_shadow_mode == DirectionalLight3D.SHADOW_ORTHOGONAL, "Visual: direct-only real-time sun and single shadow map quality profile")
-	for light: OmniLight3D in environment_holder.find_children("*", "OmniLight3D", true, false):
-		check.call(not light.shadow_enabled, "Visual: local lamp shadows disabled")
-	check.call(game.neighborhood.find_children("*", "ReflectionProbe", true, false).size() == 2, "Visual: two localized reflection probes")
-	for reflection_probe: ReflectionProbe in game.neighborhood.find_children("*", "ReflectionProbe", true, false):
-		check.call(reflection_probe.visible == not low_quality, "Visual: reflection capture follows low/medium profile")
-	var bake_chunks: Array = game.neighborhood.get_node("SlavicTown").find_children("*", "MeshInstance3D", false, false)
-	check.call(bake_chunks.size() == game.neighborhood.assets.batch_count and bake_chunks.size() > 50, "Visual: spatially merged town geometry has a bounded render-node count")
-	for chunk: MeshInstance3D in bake_chunks:
-		var arrays: Array = chunk.mesh.surface_get_arrays(0)
-		var uv2: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV2]
-		check.call(chunk.gi_mode == GeometryInstance3D.GI_MODE_STATIC and uv2.size() == chunk.mesh.surface_get_array_len(0), "Visual: every static town mesh has unique complete UV2")
-		var material := chunk.mesh.surface_get_material(0) as StandardMaterial3D
-		check.call(material != null and material.albedo_texture != null and material.metallic <= 0.05 and material.roughness >= 0.75, "Visual: shared low-metal PBR material and atlas texture")
-	var ground := game.neighborhood.get_node("DirtGround") as MeshInstance3D
-	check.call(ground != null and ground.gi_mode == GeometryInstance3D.GI_MODE_STATIC and ground.mesh is PlaneMesh and (ground.mesh as PlaneMesh).add_uv2, "Visual: dirt ground has bakeable UV2")
-	var decorative_batches: Array = game.neighborhood.get_node("Props").find_children("*", "MultiMeshInstance3D", false, false)
-	check.call(decorative_batches.size() == game.neighborhood.builder.batch_count and decorative_batches.size() > 0, "Visual: handcrafted details use a few dedicated prop batches")
-	for prop: MultiMeshInstance3D in decorative_batches:
-		check.call(prop.gi_mode == GeometryInstance3D.GI_MODE_DISABLED and prop.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF, "Visual: tiny primitive decoration avoids GI and shadows")
-	for zone in LocationRegistry.IDS:
-		check.call(game.world.locations.has(zone) and game.neighborhood.locations_root.has_node(zone), "Visual: official zone marker " + zone)
-		check.call(game.world.closest_location(game.world.location_position(zone)) == zone, "Visual: zone bounds contain official anchor " + zone)
-	for npc_id: String in game.npc_manager.entities:
-		var entity: NPCController = game.npc_manager.entities[npc_id]
-		check.call(entity.visual_root.piece_count >= 16 and not entity.body_mesh.visible, "Visual: distinct primitive silhouette " + npc_id)
-		for part: GeometryInstance3D in entity.visual_root.find_children("*", "GeometryInstance3D", true, false):
-			check.call(part.gi_mode == GeometryInstance3D.GI_MODE_DYNAMIC, "Visual: moving NPC part receives dynamic light probes " + npc_id)
-	var exclude: Array[RID] = [game.player.get_rid()]
-	for entity: NPCController in game.npc_manager.entities.values():
-		exclude.append((entity.get_node("Body") as StaticBody3D).get_rid())
-	for npc: NPCData in game.world.npcs.values():
-		check.call(_clear(game, game.world.npc_position(npc), exclude), "Visual: scheduled NPC clear of buildings " + npc.id)
-	# Sample connected walking routes at half-meter intervals around the fountain.
-	var hub := Vector3(4, 0, 7)
-	var route: Array[Vector3] = [Vector3(0, 0, 11), hub, Vector3(4, 0, -6), Vector3(0, 0, -5), Vector3(0, 0, -18)]
-	for index in range(route.size() - 1):
-		check.call(_route_clear(game, route[index], route[index + 1], exclude), "Visual: connected main street segment " + str(index))
-	for destination: Vector3 in [Vector3(-10, 0, -6), Vector3(10, 0, -6), Vector3(10, 0, 9), Vector3(-10, 0, 9)]:
-		var origin := Vector3(4, 0, -6) if destination.z < 0 else hub
-		check.call(_route_clear(game, origin, destination, exclude), "Visual: accessible zone route " + str(destination))
-	var original_position: Vector3 = game.player.global_position
-	var original_pivot: Vector3 = arm.rotation
-	var profile_before: Dictionary = game.world.player_profile.to_dict()
-	game.player.global_position = Vector3(0, 0, 15)
-	arm.rotation = Vector3(-0.16, 0, 0)
-	for _index in range(4):
-		await game.get_tree().physics_frame
-	check.call(arm.get_hit_length() < arm.spring_length - 1.0 and arm.get_hit_length() > 0.5, "Visual: camera retracts ahead of house wall")
-	game.player.global_position = Vector3(11, 0, -13)
-	check.call(PlayerSpawnResolver.place(game.player, game.world), "Visual: blocked legacy spawn recovered")
-	check.call(PlayerSpawnResolver.is_clear(game.player, game.player.global_position), "Visual: recovered spawn is walkable")
-	check.call(game.world.player_profile.to_dict() == profile_before, "Visual: spawn recovery preserves behavior profile")
-	game.player.global_position = Vector3(4, 0, 7)
-	game.player.controls_enabled = true
+	check.call(visual.animation_tree.active == all_clips, "Visual: animation tree runs only when source locomotion clips exist")
+	for mesh_instance: MeshInstance3D in visual.model.find_children("*", "MeshInstance3D", true, false):
+		check.call(mesh_instance.gi_mode == GeometryInstance3D.GI_MODE_DYNAMIC, "Visual: moving player meshes receive dynamic lighting")
+		check.call(mesh_instance.mesh != null and mesh_instance.mesh.get_surface_count() == 2, "Visual: both player material surfaces remain")
+		for surface_index in range(mesh_instance.mesh.get_surface_count()):
+			var material := mesh_instance.get_surface_override_material(surface_index) as StandardMaterial3D
+			check.call(material != null and material.albedo_texture != null and material.albedo_texture.get_width() <= 1024, "Visual: player PBR material remains imported within texture budget")
+	var saved_position: Vector3 = game.player.global_position
+	var old_profile: Dictionary = game.world.player_profile.to_dict()
+	game.player.global_position = Vector3(0, 0, 11)
+	check.call(PlayerSpawnResolver.place(game.player, game.world), "Visual: legacy Day 1 spawn relocates into the village")
+	check.call(game.world.player_profile.to_dict() == old_profile, "Visual: spawn migration preserves behavior history")
+	var migrated_position: Vector3 = game.player.global_position
+	check.call(migrated_position.distance_to(game.world.location_position("PLAYER_QUARTERS")) < 0.1, "Visual: legacy spawn resolves to the safe player house")
+	game.player.global_position = Vector3(12.45, 1.4, -81.0)
 	game.player.velocity = Vector3.ZERO
 	arm.rotation = Vector3(-0.16, 0, 0)
+	game.player.controls_enabled = true
 	Input.action_press("move_forward")
-	for _index in range(5):
+	for _frame in range(7):
 		await game.get_tree().physics_frame
 	await game.get_tree().process_frame
-	check.call(visual.locomotion_state == PlayerVisual.LocomotionState.WALK, "Visual: locomotion observes walking controller velocity")
-	check.call(game.player.global_position.z < 7, "Visual: missing animations never block authoritative movement")
 	Input.action_release("move_forward")
+	check.call(visual.locomotion_state == PlayerVisual.LocomotionState.WALK, "Visual: movement still drives the original walk animation state")
+	check.call(game.player.global_position.z < -81.0, "Visual: indoor movement does not replace player authority")
 	game.player.velocity = Vector3.ZERO
-	game.player.global_position = original_position
-	arm.rotation = original_pivot
-	game.world.player_position = original_position
+	game.player.global_position = saved_position
+	game.world.player_position = saved_position
 	_test_old_world(check)
-	print("TOWN VISUALS: ", game.neighborhood.visual_instance_count, " instances in ", game.neighborhood.visual_batch_count, " batches; clips ", visual.usable_clips)
-
-func _clear(game: Node3D, position_value: Vector3, exclude: Array[RID]) -> bool:
-	var query := PhysicsShapeQueryParameters3D.new()
-	query.shape = game.player.get_node("CollisionShape3D").shape
-	query.transform = Transform3D(Basis.IDENTITY, position_value + Vector3(0, 0.94, 0))
-	query.exclude = exclude
-	return game.get_world_3d().direct_space_state.intersect_shape(query, 1).is_empty()
-
-func _route_clear(game: Node3D, first: Vector3, second: Vector3, exclude: Array[RID]) -> bool:
-	var steps := ceili(first.distance_to(second) * 2)
-	for index in range(steps + 1):
-		if not _clear(game, first.lerp(second, float(index) / maxf(steps, 1)), exclude):
-			return false
-	return true
 
 func _test_old_world(check: Callable) -> void:
 	var baseline := WorldState.new(7731)
@@ -157,22 +75,22 @@ func _test_old_world(check: Callable) -> void:
 	for event: Dictionary in old["event_history"]:
 		event["location_id"] = "shop" if event["target_id"] == "alex" else "park"
 	var migrated := WorldState.from_dict(old)
-	check.call(migrated.player_profile.to_dict() == baseline.player_profile.to_dict(), "Retheme: Day 2 traits preserved")
-	check.call(migrated.reputation.to_dict() == baseline.reputation.to_dict(), "Retheme: Day 2 reputation preserved")
-	check.call(migrated.echo_seed == baseline.echo_seed, "Retheme: seed preserved")
-	check.call(migrated.last_player_location == "PLAYER_QUARTERS" and migrated.echo_location_id == "TOWN_SQUARE", "Retheme: saved world aliases mapped")
+	check.call(migrated.player_profile.to_dict() == baseline.player_profile.to_dict(), "Retheme: Day 2 traits survive the visual rebuild")
+	check.call(migrated.reputation.to_dict() == baseline.reputation.to_dict(), "Retheme: local reputation survives the visual rebuild")
+	check.call(migrated.echo_seed == baseline.echo_seed, "Retheme: saved Echo seed survives")
+	check.call(migrated.last_player_location == "PLAYER_QUARTERS" and migrated.echo_location_id == "TOWN_SQUARE", "Retheme: saved world aliases map to official locations")
 	for npc_id: String in baseline.npcs:
 		var before: NPCData = baseline.npcs[npc_id]
 		var after: NPCData = migrated.npcs[npc_id]
-		check.call(after.id == before.id and after.relationship.to_dict() == before.relationship.to_dict(), "Retheme: NPC identity/relationship preserved " + npc_id)
-		check.call(after.role == before.role and after.home_location_id == "RESIDENTIAL_ROW", "Retheme: legacy role/home rethemed " + npc_id)
-		check.call(after.memories.size() == before.memories.size(), "Retheme: memory count preserved " + npc_id)
+		check.call(after.id == before.id and after.relationship.to_dict() == before.relationship.to_dict(), "Retheme: NPC identity and relationship retained " + npc_id)
+		check.call(after.role == before.role and after.home_location_id == "RESIDENTIAL_ROW", "Retheme: old role and home data migrates " + npc_id)
+		check.call(after.memories.size() == before.memories.size(), "Retheme: memory count retained " + npc_id)
 		for index in range(before.memories.size()):
 			var old_memory: NPCMemory = before.memories[index]
 			var new_memory: NPCMemory = after.memories[index]
-			check.call(new_memory.id == old_memory.id and new_memory.summary == old_memory.summary and new_memory.actual_source == old_memory.actual_source, "Retheme: memory identity/text/source preserved")
-			check.call(new_memory.location_id in LocationRegistry.IDS, "Retheme: memory location is valid")
+			check.call(new_memory.id == old_memory.id and new_memory.summary == old_memory.summary and new_memory.actual_source == old_memory.actual_source, "Retheme: memory identity, text, and source retained")
+			check.call(new_memory.location_id in LocationRegistry.IDS, "Retheme: memory location is canonical")
 	for event in migrated.event_history:
-		check.call(event.location_id in LocationRegistry.IDS, "Retheme: historical action location is valid")
+		check.call(event.location_id in LocationRegistry.IDS, "Retheme: action-history location is canonical")
 	for legacy_id: String in LocationRegistry.LEGACY:
-		check.call(LocationRegistry.canonical(legacy_id) in LocationRegistry.IDS, "Retheme: legacy alias " + legacy_id)
+		check.call(LocationRegistry.canonical(legacy_id) in LocationRegistry.IDS, "Retheme: legacy alias remains readable " + legacy_id)

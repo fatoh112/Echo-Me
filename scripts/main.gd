@@ -1,7 +1,7 @@
 extends Node3D
 
 @onready var player: PlayerController = $Player
-@onready var neighborhood: Neighborhood = $Neighborhood
+@onready var neighborhood: PremiumVillage = $Neighborhood
 @onready var npc_manager: NPCManager = $NPCManager
 @onready var save_manager: SaveManager = $SaveManager
 @onready var interaction_ui: InteractionUI = $InteractionUI
@@ -21,8 +21,8 @@ func _ready() -> void:
 	_validation_mode = "--echo-validation" in OS.get_cmdline_user_args()
 	world = WorldState.new(94721) if _validation_mode else save_manager.load_world(SaveManager.SAVE_PATH, randi_range(1, 2147483647))
 	neighborhood.build(world.locations)
-	player.global_position = Vector3(clampf(world.player_position.x, -28, 28), 0, clampf(world.player_position.z, -28, 28))
-	npc_manager.setup(world, player.global_position)
+	player.global_position = world.player_position
+	npc_manager.setup(world, player.global_position, player)
 	interaction_ui.action_requested.connect(_on_action_requested)
 	interaction_ui.modal_changed.connect(_on_modal_changed)
 	debug_ui.setup(world, player)
@@ -119,6 +119,9 @@ func _on_modal_changed(open: bool) -> void:
 	player.visual.clear_preview()
 	if open and not interaction_ui.menu_target_id.is_empty():
 		player.visual.play_talk()
+	var npc: NPCController = npc_manager.entities.get(interaction_ui.menu_target_id)
+	if npc != null:
+		npc.set_talking(open)
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if open else Input.MOUSE_MODE_CAPTURED
 
 

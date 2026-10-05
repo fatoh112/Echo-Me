@@ -54,8 +54,9 @@ func _run() -> void:
 		manifest.clips[name_value] = {"source": file_name, "source_clip": selected_clip_name, "duration": clip.length, "source_duration": original.length, "native_speed_mps": root_speed, "loop": clip.loop_mode == Animation.LOOP_LINEAR, "gameplay": name_value not in ["JOG", "SIT", "TURN_LEFT", "TURN_RIGHT", "START_WALK"]}
 		print("BAKED ", name_value, " duration=", clip.length, " native speed=", root_speed)
 		source.free()
+	_add_crouch_variants(library)
 	target_model.free()
-	if library.get_animation_list().size() != MAPPING.size():
+	if library.get_animation_list().size() != MAPPING.size() + 2:
 		printerr("Incomplete bake; preserve previous library")
 		quit(1)
 		return
@@ -63,6 +64,41 @@ func _run() -> void:
 	var file := FileAccess.open("res://data/animations/player_clips.json", FileAccess.WRITE)
 	file.store_string(JSON.stringify(manifest, "\t") + "\n")
 	quit(0 if error == OK else 1)
+
+func _add_crouch_variants(library: AnimationLibrary) -> void:
+	# The source pack has no crouch clip. Derive an authored pose from the same
+	# humanoid gait curves so the collision stance and visible stance agree.
+	var bend := {
+		"mixamorig_Hips": 0.045,
+		"mixamorig_Spine": 0.06,
+		"mixamorig_Spine1": 0.035,
+		"mixamorig_LeftUpLeg": -0.48,
+		"mixamorig_RightUpLeg": -0.48,
+		"mixamorig_LeftLeg": 0.88,
+		"mixamorig_RightLeg": 0.88,
+		"mixamorig_LeftFoot": -0.38,
+		"mixamorig_RightFoot": -0.38,
+	}
+	for source_name in ["IDLE", "WALK"]:
+		var source := library.get_animation(source_name)
+		var result := source.duplicate(true) as Animation
+		result.resource_name = "CROUCH" if source_name == "IDLE" else "CROUCH_WALK"
+		for track in result.get_track_count():
+			if result.track_get_type(track) == Animation.TYPE_ROTATION_3D:
+				var bone := str(result.track_get_path(track).get_subname(0))
+				if bend.has(bone):
+					var offset := Quaternion(Vector3.RIGHT, float(bend[bone]))
+					for key in result.track_get_key_count(track):
+						var value: Quaternion = result.track_get_key_value(track, key)
+						result.track_set_key_value(track, key, (offset * value).normalized())
+			elif result.track_get_type(track) == Animation.TYPE_POSITION_3D and str(result.track_get_path(track).get_subname(0)) == "mixamorig_Hips":
+				for key in result.track_get_key_count(track):
+					var value: Vector3 = result.track_get_key_value(track, key)
+					value.y -= 0.30
+					result.track_set_key_value(track, key, value)
+		result.loop_mode = Animation.LOOP_LINEAR
+		library.add_animation(result.resource_name, result)
+	print("BAKED crouch variants from IDLE and WALK")
 
 func _compatible(source: Skeleton3D, target: Skeleton3D, clip: Animation) -> bool:
 	if source == null or source.get_bone_count() != target.get_bone_count():
